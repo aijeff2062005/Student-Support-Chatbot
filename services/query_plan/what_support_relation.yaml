@@ -2,25 +2,14 @@ version: "1.0"
 flow_name: "what_support_relation"
 description: >
   Workflow for WHAT-SUPPORT-RELATION queries.
-  This is a narrow student-support specialization of what_relation. It answers
-  relationship questions around support policies, tuition/payment policies,
-  scholarships, student documents, responsible offices, activities, clubs,
-  services, and other current-student support entities.
-
-  Strategy:
-  - Resolve context and primary entities separately, like what_relation.
-  - Prefer ID-based graph relation lookup when both sides resolve.
-  - If the primary side is keyword-like, search relation attributes from the
-    resolved support context, then recover graph candidates.
-  - Use label traversal only as a controlled fallback.
-  - Compact relation output with the same canonical contract as what_relation.
-  - Do not use crawled-data generation for policy-sensitive support answers.
+  This follows the same relation pipeline as what_relation, but is used for
+  current-student support-domain entities such as policies, services,
+  departments, centers, clubs, activities, facilities, and responsible units.
 
 steps:
-  # PHASE 1 - RESOLVE SUPPORT RELATION SIDES
   - step_id: "P1_S1"
     name: "resolve_support_context_entities"
-    description: "Resolve the context/anchor side of a support relation query."
+    description: "Resolve the context side of the relation query to graph nodes."
     module: "dbs.milvus_helper"
     function: "search_entity_by_name"
     inputs:
@@ -28,13 +17,13 @@ steps:
       entity_type: "$input.context_entities[*].label"
       keywords: "$input.keywords"
       top_k: 1
-      threshold: 0.72
+      threshold: 0.75
       time: "$input.time"
     outputs: "context_found_list"
 
   - step_id: "P1_S2"
-    name: "prepare_support_primary_entities"
-    description: "Normalize the target side of the support relation query."
+    name: "prepare_primary_support_entities"
+    description: "Normalize primary-side entities into search-ready parameters."
     module: "dbs.graph_search_helpers"
     function: "prepare_entities_for_search"
     inputs:
@@ -43,8 +32,8 @@ steps:
     outputs: "primary_search_params"
 
   - step_id: "P1_S3"
-    name: "resolve_support_primary_entities"
-    description: "Resolve the target side when it is expressed as a concrete entity."
+    name: "resolve_primary_support_entities"
+    description: "Resolve the primary side when it is expressed as a proper entity."
     module: "dbs.milvus_helper"
     function: "search_entity_by_name"
     inputs:
@@ -52,53 +41,113 @@ steps:
       entity_type: "$state.primary_search_params.entity_type"
       keywords: "$input.keywords"
       top_k: 2
-      threshold: 0.68
+      threshold: 0.7
       time: "$input.time"
     outputs: "primary_found_list"
 
   - step_id: "P1_S4"
-    name: "build_support_relation_queries"
-    description: "Build compact support keywords for relation-attribute recovery."
-    condition: "$state.primary_found_list is None or len($state.primary_found_list) == 0"
+    name: "build_search_queries"
+    description: "Build keyword queries for fallback relation-attribute retrieval."
+    condition: "$state.primary_found_list is None"
     module: "dbs.graph_search_helpers"
     function: "merge_search_queries"
     inputs:
       primary_texts: "$input.primary_entities[*].text"
-      keyword_attributes: "$input.keyword_attributes"
+      keyword_attributes: "$input.keywords"
     outputs: "search_queries"
 
-  # PHASE 2A - RESOLVED SIDES: ID-BASED RELATION LOOKUP
+  - step_id: "P1_S5"
+    name: "find_specialization_fee_policy_relation"
+    description: "For Specialization fee questions: use direct fee_information if present; otherwise fallback to parent Major."
+    condition: "$state.primary_found_list is not None and $state.context_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and ($state.context_found_list[0]['node_type'] == 'Specialization' and $state.primary_found_list[0]['node_type'] == 'Policy') and ($input.primary_topic == 'fee' or ($input.subtopics is not None and 'cost_fee' in $input.subtopics))"
+    module: "dbs.graph_search_helpers"
+    function: "find_specialization_fee_policy_relation"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      primary_ids: "$state.primary_found_list[*].node_id"
+      time: "$input.time"
+    outputs: "subgraph"
+
+  - step_id: "P1_S6"
+    name: "resolve_course_support_relation_depth"
+    description: "Resolve initial exact depth for course relation lookup by context."
+    condition: "($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0) and ($state.primary_found_list[0]['node_type'] == 'Course') and ($state.context_found_list[0]['node_type'] in ['Major', 'Specialization', 'Faculty', 'AcademicProgram'])"
+    module: "dbs.course_admin_ops"
+    function: "resolve_course_relation_depth"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      context_label: "$state.context_found_list.0.node_type"
+      time: "$input.time"
+    outputs: "course_relation_depth"
+
+  - step_id: "P1_S7"
+    name: "build_course_support_relation_fallback_depths"
+    description: "Build scoped fallback depths for course relation lookup by context."
+    condition: "$state.course_relation_depth is not None"
+    module: "dbs.course_admin_ops"
+    function: "build_course_relation_fallback_depths"
+    inputs:
+      context_label: "$state.context_found_list.0.node_type"
+      resolved_depth: "$state.course_relation_depth"
+    outputs: "course_relation_fallback_depths"
+
   - step_id: "P2A_S1"
-    name: "fetch_support_subgraph_by_ids"
-    description: "Run a bounded graph relation search for resolved support entities."
-    condition: "$state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0"
+    name: "fetch_major_policy_subgraph_by_ids"
+    description: "Run ID-based relation search for the special Major-Policy path."
+    condition: "($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0) and ($state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy')"
     module: "dbs.graph_search_helpers"
     function: "find_relation_with_ids"
     inputs:
       context_ids: "$state.context_found_list[*].node_id"
       primary_ids: "$state.primary_found_list[*].node_id"
-      max_depth: 2
+      max_depth: 1
       time: "$input.time"
     outputs: "subgraph"
 
-  # PHASE 2B - UNRESOLVED TARGET: RELATION ATTRIBUTE RECOVERY
+  - step_id: "P2A_S2"
+    name: "fetch_subgraph_by_ids"
+    description: "Run the standard ID-based relation search for resolved entities."
+    condition: "($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0) and not ($state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not (($state.context_found_list[0]['node_type'] == 'Specialization' and $state.primary_found_list[0]['node_type'] == 'Policy') and ($input.primary_topic == 'fee' or ($input.subtopics is not None and 'cost_fee' in $input.subtopics))) and not (($state.primary_found_list[0]['node_type'] == 'Course') and ($state.context_found_list[0]['node_type'] in ['Major', 'Specialization', 'Faculty', 'AcademicProgram']) and $state.course_relation_depth is not None)"
+    module: "dbs.graph_search_helpers"
+    function: "find_relation_with_ids"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      primary_ids: "$state.primary_found_list[*].node_id"
+      max_depth: 3
+      time: "$input.time"
+    outputs: "subgraph"
+
+  - step_id: "P2A_S2B"
+    name: "fetch_course_subgraph_by_ids_with_resolved_depth"
+    description: "Run course-membership relation search with resolved initial depth and scoped fallback depths."
+    condition: "($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0) and ($state.primary_found_list[0]['node_type'] == 'Course') and ($state.context_found_list[0]['node_type'] in ['Major', 'Specialization', 'Faculty', 'AcademicProgram']) and $state.course_relation_depth is not None"
+    module: "dbs.course_admin_ops"
+    function: "find_relation_with_ids_exact_depth"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      primary_ids: "$state.primary_found_list[*].node_id"
+      max_depth: "$state.course_relation_depth"
+      fallback_depths: "$state.course_relation_fallback_depths"
+      time: "$input.time"
+    outputs: "subgraph"
+
   - step_id: "P2B_S1"
-    name: "search_support_relation_attributes"
-    description: "Search support relation attributes from the resolved context side."
-    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and ($state.primary_found_list is None or len($state.primary_found_list) == 0)"
+    name: "search_relation_attributes"
+    description: "Search relation attributes from the context side using fallback keyword queries."
+    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and $state.primary_found_list is not None and len($state.primary_found_list) == 0"
     module: "dbs.milvus_helper"
     function: "search_relation_full_text"
     inputs:
       node_ids: "$state.context_found_list[*].node_id"
       queries: "$state.search_queries"
-      top_k: 10
-      similarity_threshold: 0.68
-      min_final_score: 0.68
+      top_k: 30
+      similarity_threshold: 0.65
+      min_final_score: 0.65
     outputs: "relation_attr_results"
 
   - step_id: "P2B_S2"
-    name: "build_support_primary_candidates_from_relation_attributes"
-    description: "Recover candidate target node IDs from matched support relation attributes."
+    name: "build_primary_candidates_from_relation_attributes"
+    description: "Extract candidate primary-side node IDs from matched relation attributes."
     condition: "$state.relation_attr_results is not None and len($state.relation_attr_results) > 0"
     module: "dbs.graph_search_helpers"
     function: "extract_node_ids_from_relation_attrs"
@@ -108,34 +157,34 @@ steps:
     outputs: "primary_from_attrs"
 
   - step_id: "P2B_S3"
-    name: "fetch_support_subgraph_from_relation_attributes"
-    description: "Re-run bounded ID-based lookup using candidates recovered from relation attributes."
+    name: "fetch_subgraph_from_relation_attributes"
+    description: "Re-run ID-based relation search using candidates recovered from relation attributes."
     condition: "$state.primary_from_attrs is not None and len($state.primary_from_attrs) > 0"
     module: "dbs.graph_search_helpers"
     function: "find_relation_with_ids"
     inputs:
       context_ids: "$state.context_found_list[*].node_id"
       primary_ids: "$state.primary_from_attrs"
-      max_depth: 2
+      max_depth: 3
       time: "$input.time"
     outputs: "subgraph"
 
   - step_id: "P2B_S4"
-    name: "fetch_support_subgraph_by_label"
-    description: "Controlled label traversal when support target remains unresolved."
-    condition: "$state.subgraph is None and $state.primary_from_attrs is None and $state.context_found_list is not None and len($state.context_found_list) > 0"
+    name: "fetch_subgraph_by_label"
+    description: "Traverse by primary label to collect relation candidates when the primary side is unresolved."
+    condition: "$state.subgraph is None and $state.primary_from_attrs is None"
     module: "dbs.graph_search_helpers"
     function: "find_relation_by_label"
     inputs:
       context_ids: "$state.context_found_list[*].node_id"
       primary_label: "$input.primary_entities[0].label"
-      max_depth: 2
+      max_depth: 3
       time: "$input.time"
     outputs: "subgraph"
 
   - step_id: "P2B_S5"
-    name: "filter_support_subgraph_by_keywords"
-    description: "Filter controlled label-traversal candidates by support keywords."
+    name: "filter_subgraph_by_keywords"
+    description: "Filter label-traversal candidates by keyword matches on node or relation properties."
     condition: "$state.subgraph is not None and len($input.keywords) > 0 and $state.relation_attr_results is None"
     module: "dbs.graph_search_helpers"
     function: "filter_subgraph_by_keywords"
@@ -144,16 +193,49 @@ steps:
       keywords: "$state.search_queries"
     outputs: "subgraph"
 
-  # PHASE 3 - COMPACT OUTPUT
   - step_id: "P3_S1"
-    name: "build_support_relation_context"
-    description: "Deduplicate and compact support relation results into answer-ready JSON."
+    name: "build_relation_context"
+    description: "Deduplicate, group, and compact relation results into answer-ready JSON."
     condition: "$state.subgraph is not None"
     module: "dbs.graph_search_helpers"
     function: "compact_relation_results"
     inputs:
       subgraph: "$state.subgraph"
       original_query: "$input.original_query"
-      max_candidates: 10
-      max_rel_samples: 4
+      max_candidates: 15
+      max_rel_samples: 5
     outputs: "relation_context"
+
+  - step_id: "P3_S1B"
+    name: "build_course_membership_relation_answer"
+    description: "Build course-membership formatted answer data only for Course-in-scope relation checks."
+    condition: "$state.relation_context is not None and $state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.primary_found_list[0]['node_type'] == 'Course' and $state.context_found_list[0]['node_type'] in ['Major', 'Specialization', 'Faculty', 'AcademicProgram']"
+    module: "dbs.course_admin_ops"
+    function: "build_course_membership_relation_answer"
+    inputs:
+      relation_context: "$state.relation_context"
+      subject: "$state.context_found_list.0"
+      obj: "$state.primary_found_list.0"
+    outputs: "relation_answer_data"
+
+  - step_id: "P4_S1"
+    name: "crawled_data_search"
+    description: "Search crawled data when graph and relation retrieval produce no compact result."
+    condition: "not $state.relation_context and not ($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "search_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      top_k: 5
+    outputs: "crawled_data_results"
+
+  - step_id: "P4_S2"
+    name: "generate_crawled_data"
+    description: "Generate and cache crawled data when all relation retrieval paths are empty."
+    condition: "not $state.relation_context and not $state.crawled_data_results and not ($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "generate_and_save_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      collection_name: "knowledge_university_crawled_data"
+    outputs: "crawled_data_results"

@@ -2,23 +2,14 @@ version: "1.0"
 flow_name: "what_support_list"
 description: >
   Workflow for WHAT-SUPPORT-LIST and routed WHAT-SUPPORT-COUNT queries.
-  This is a narrow student-support specialization of what_list. It enumerates
-  support-domain graph entities such as policies, services, departments,
-  centers, clubs, activities, and facilities from a resolved context.
-
-  Strategy:
-  - Resolve the support/list context entity.
-  - Enumerate target entities with the same deterministic PATH_REGISTRY
-    mechanisms used by what_list.
-  - Format the list result into the canonical collection contract.
-  - Do not use Course-specific depth logic.
-  - Do not use crawled-data generation for support/policy-sensitive answers.
+  This follows the same deterministic listing pipeline as what_list, but is
+  used for current-student support-domain entities such as policies, services,
+  departments, centers, clubs, activities, and facilities.
 
 steps:
-  # PHASE 1 - SUPPORT CONTEXT RESOLUTION
   - step_id: "P1_S1"
-    name: "resolve_support_list_context"
-    description: "Resolve the context entity that anchors support enumeration."
+    name: "resolve_context_entity"
+    description: "Resolve the context entity that anchors deterministic traversal."
     module: "dbs.milvus_helper"
     function: "search_entity_by_name"
     inputs:
@@ -29,10 +20,31 @@ steps:
       time: "$input.time"
     outputs: "context_found_list"
 
-  # PHASE 2 - DETERMINISTIC SUPPORT ENUMERATION
+  - step_id: "P2_S0"
+    name: "resolve_course_list_depth"
+    description: "Resolve course-list depth by context before PATH_REGISTRY traversal."
+    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and $input.count_enumerate_targets is not None and ('Course' in $input.count_enumerate_targets) and ($state.context_found_list[0]['node_type'] in ['Major', 'Specialization', 'Faculty', 'AcademicProgram'])"
+    module: "dbs.course_admin_ops"
+    function: "resolve_course_membership_depth"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      context_label: "$state.context_found_list.0.node_type"
+      time: "$input.time"
+    outputs: "course_list_depth"
+
+  - step_id: "P2_S0B"
+    name: "build_course_depth_override"
+    description: "Build per-target depth override for Course traversal when resolved depth is available."
+    condition: "$state.course_list_depth is not None"
+    module: "dbs.course_admin_ops"
+    function: "build_course_depth_override"
+    inputs:
+      course_depth: "$state.course_list_depth"
+    outputs: "course_depth_override"
+
   - step_id: "P2_S1"
-    name: "list_support_by_label_for_university"
-    description: "Fast path for University context: list support target labels directly."
+    name: "list_all_by_label_for_university"
+    description: "Fast path for University context: list target labels directly without path traversal."
     condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and $state.context_found_list.0.node_type == 'University'"
     module: "services.path_registry"
     function: "list_all_by_label"
@@ -41,11 +53,12 @@ steps:
       display_limit: 5
       start_index: "$input.start_index"
       time: "$input.time"
+      per_target_depth_override: "$state.course_depth_override"
     outputs: "list_results"
 
   - step_id: "P2_S2"
-    name: "list_support_via_path_registry"
-    description: "Enumerate support target entities through PATH_REGISTRY traversal."
+    name: "build_list_via_path_registry"
+    description: "Enumerate target entities through the PATH_REGISTRY traversal rules."
     condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and $state.context_found_list.0.node_type != 'University' and $state.list_results is None"
     module: "services.path_registry"
     function: "list_via_path_registry"
@@ -56,25 +69,12 @@ steps:
       display_limit: 7
       start_index: "$input.start_index"
       time: "$input.time"
+      per_target_depth_override: "$state.course_depth_override"
     outputs: "list_results"
 
-  - step_id: "P2_S3"
-    name: "filter_support_list_results"
-    description: "Filter broad support lists by concrete support keywords, keeping original results if no confident filter matches."
-    condition: "$state.list_results is not None and (($input.keywords is not None and len($input.keywords) > 0) or ($input.keyword_attributes is not None and len($input.keyword_attributes) > 0))"
-    module: "services.support_list_helpers"
-    function: "filter_support_list_results"
-    inputs:
-      list_results: "$state.list_results"
-      keywords: "$input.keywords"
-      keyword_attributes: "$input.keyword_attributes"
-      target_topics: "$input.count_enumerate_targets"
-    outputs: "list_results"
-
-  # PHASE 3 - RESULT FORMATTING
   - step_id: "P3_S1"
-    name: "format_support_list_results"
-    description: "Format support enumeration with total count and pagination metadata."
+    name: "format_list_results"
+    description: "Format the enumerated result with total count and pagination metadata."
     condition: "$state.list_results is not None"
     module: "services.what_relation_count_list_constraint"
     function: "format_list_with_total"
@@ -84,3 +84,25 @@ steps:
       context_entities: "$input.context_entities"
       context_found_list: "$state.context_found_list"
     outputs: "formatted_answer"
+
+  - step_id: "P4_S1"
+    name: "crawled_data_search"
+    description: "Search crawled data when deterministic graph enumeration returns no items."
+    condition: "($state.list_results is None or ($state.list_results is not None and $state.list_results.total == 0)) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "search_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      top_k: 5
+    outputs: "crawled_data_results"
+
+  - step_id: "P4_S2"
+    name: "generate_crawled_data"
+    description: "Generate and cache crawled data when graph enumeration and search fallback are empty."
+    condition: "($state.list_results is None or ($state.list_results is not None and $state.list_results.total == 0)) and not $state.crawled_data_results and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "generate_and_save_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      collection_name: "knowledge_university_crawled_data"
+    outputs: "crawled_data_results"
