@@ -1,0 +1,178 @@
+version: "1.0"
+flow_name: "what_compare"
+description: >
+  Workflow for WHAT-COMPARE queries.
+  Compares one base entity against one or more compare targets by retrieving full properties
+  through Neo4j, then falling back to AcademicProgram attributes for
+  Major/Specialization, and finally crawled data when structured search is empty.
+
+  Strategy:
+  - Phase 1: Resolve the base entity and each compare target independently via Milvus.
+  - Phase 2: Retrieve full node properties for the base plus all compare targets in one comparison query.
+  - Phase 3: Apply AcademicProgram fallback for Major/Specialization when
+    the direct comparison result is empty.
+  - Phase 4: Fall back to crawled data only when all structured retrieval is empty.
+
+steps:
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 1 — RESOLVE BOTH SIDES
+  # primary_entities  → primary_found_list
+  # compare_targets   → compare_found_list
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P1_S1"
+    name: "prepare_primary_entities"
+    description: "Normalize primary compare-side entities into search-ready parameters."
+    module: "dbs.graph_search_helpers"
+    function: "prepare_entities_for_search"
+    inputs:
+      entities: "$input.primary_entities"
+      expand_types: true
+    outputs: "primary_search_params"
+
+  - step_id: "P1_S2"
+    name: "resolve_primary_entity"
+    description: "Resolve the primary compare-side entity to its graph node."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$state.primary_search_params.entity_name"
+      entity_type: "$state.primary_search_params.entity_type"
+      keywords: "$input.keywords"
+      # keyword_attributes: "$input.keyword_attributes"
+      top_k: 1
+      threshold: 0.75
+      time: "$input.time"
+    outputs: "primary_found_list"
+
+  - step_id: "P1_S3"
+    name: "prepare_compare_targets"
+    description: "Normalize compare-target entities into search-ready parameters."
+    module: "dbs.graph_search_helpers"
+    function: "prepare_entities_for_search"
+    inputs:
+      entities: "$input.compare_targets"
+      expand_types: true
+    outputs: "compare_search_params"
+
+  - step_id: "P1_S4"
+    name: "resolve_compare_target_entities"
+    description: "Resolve compare targets individually to preserve comparison order."
+    module: "dbs.graph_search_helpers"
+    function: "resolve_entities_individually"
+    inputs:
+      entity_names: "$state.compare_search_params.entity_name"
+      entity_types: "$state.compare_search_params.entity_type"
+      keywords: "$input.keywords"
+      # keyword_attributes: "$input.keyword_attributes"
+      top_k: 1
+      threshold: 0.75
+      time: "$input.time"
+    outputs: "compare_found_list"
+
+  - step_id: "P1_S5"
+    name: "resolve_attribute_definitions"
+    description: "Map requested attribute keywords to canonical schema attribute names."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and $state.compare_found_list is not None and len($state.compare_found_list) > 0"
+    module: "dbs.milvus_helper"
+    function: "search_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: "$input.primary_entities[0].label"
+      similarity_threshold: 0.65
+      top_k: 3
+    outputs: "resolved_attribute_definitions"
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 2 — DIRECT PROPERTY COMPARISON
+  # Call Neo4j once for the base node plus all compare nodes.
+  # - node_ids   = primary node_id + compare node_ids
+  # - node_types = primary node_type + compare node_types
+  # - attribute_list = keyword_attributes (empty → return full properties)
+  # Output: list[{node_id, labels, name, description, properties}]
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P2_S1"
+    name: "fetch_compare_properties"
+    description: "Fetch comparable properties for the base entity and all compare targets."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and $state.compare_found_list is not None and len($state.compare_found_list) > 0  and $state.resolved_attribute_definitions and len($state.resolved_attribute_definitions) > 0"
+    module: "dbs.graph_search_helpers"
+    function: "comparison_search_found_entities"
+    inputs:
+      primary_found_list: "$state.primary_found_list"
+      compare_found_list: "$state.compare_found_list"
+      attribute_list: "$state.resolved_attribute_definitions[*].attribute_name"
+      time: "$input.time"
+    outputs: "compare_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 3 — ACADEMICPROGRAM FALLBACK
+  # Only for Major / Specialization when direct comparison returned empty.
+  # ════════════════════════════════════════════════════════════════
+
+  # When Neo4j comparison results do not expose the expected attributes on
+  # Major/Specialization nodes, retry against their linked AcademicProgram nodes.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P1_S5"
+    name: "resolve_attribute_definitions"
+    description: "Map requested attribute keywords to canonical schema attribute names."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and $state.compare_found_list is not None and len($state.compare_found_list) > 0 and not $state.compare_results"
+    module: "dbs.milvus_helper"
+    function: "search_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: "AcademicProgram"
+      similarity_threshold: 0.65
+      top_k: 3
+    outputs: "resolved_attribute_definitions"
+
+  - step_id: "P3_S2"
+    name: "fetch_primary_academic_program_rows"
+    description: "Fetch fallback compare rows for the primary side from its AcademicProgram node."
+    condition: "not $state.compare_results and $state.primary_found_list is not None and len($state.primary_found_list) > 0 and ($state.primary_found_list[0]['node_type'] == 'Major' or $state.primary_found_list[0]['node_type'] == 'Specialization')"
+    module: "dbs.graph_search_helpers"
+    function: "resolve_academic_program_compare_rows"
+    inputs:
+      found_list: "$state.primary_found_list"
+      attribute_list: "$state.resolved_attribute_definitions[*].attribute_name"
+      time: "$input.time"
+    outputs: "primary_academic_program_rows"
+
+  - step_id: "P3_S3"
+    name: "fetch_compare_academic_program_rows"
+    description: "Fetch fallback compare rows for all compare targets from their AcademicProgram nodes."
+    condition: "not $state.compare_results and $state.compare_found_list is not None and len($state.compare_found_list) > 0 and ($state.compare_found_list[0]['node_type'] == 'Major' or $state.compare_found_list[0]['node_type'] == 'Specialization')"
+    module: "dbs.graph_search_helpers"
+    function: "resolve_academic_program_compare_rows"
+    inputs:
+      found_list: "$state.compare_found_list"
+      attribute_list: "$state.resolved_attribute_definitions[*].attribute_name"
+      time: "$input.time"
+    outputs: "compare_academic_program_rows"
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 4 — CRAWLED-DATA FALLBACK
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P4_S1"
+    name: "crawled_data_search"
+    description: "Search crawled data when direct and AcademicProgram comparison results are empty."
+    condition: "not $state.compare_results and not $state.primary_academic_program_rows and not $state.compare_academic_program_rows and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "search_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      top_k: 5
+    outputs: "crawled_data_results"
+
+  - step_id: "P4_S2"
+    name: "generate_crawled_data"
+    description: "Generate and cache crawled data when all structured comparison paths are empty."
+    condition: "not $state.compare_results and not $state.primary_academic_program_rows and not $state.compare_academic_program_rows and not $state.crawled_data_results and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "generate_and_save_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      collection_name: "knowledge_university_crawled_data"
+    outputs: "crawled_data_results"

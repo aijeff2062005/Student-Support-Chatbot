@@ -1,0 +1,86 @@
+version: "1.0"
+flow_name: "what_support_list"
+description: >
+  Workflow for WHAT-SUPPORT-LIST and routed WHAT-SUPPORT-COUNT queries.
+  This is a narrow student-support specialization of what_list. It enumerates
+  support-domain graph entities such as policies, services, departments,
+  centers, clubs, activities, and facilities from a resolved context.
+
+  Strategy:
+  - Resolve the support/list context entity.
+  - Enumerate target entities with the same deterministic PATH_REGISTRY
+    mechanisms used by what_list.
+  - Format the list result into the canonical collection contract.
+  - Do not use Course-specific depth logic.
+  - Do not use crawled-data generation for support/policy-sensitive answers.
+
+steps:
+  # PHASE 1 - SUPPORT CONTEXT RESOLUTION
+  - step_id: "P1_S1"
+    name: "resolve_support_list_context"
+    description: "Resolve the context entity that anchors support enumeration."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.context_entities[*].text"
+      entity_type: "$input.context_entities[*].label"
+      keywords: "$input.keywords"
+      top_k: 1
+      time: "$input.time"
+    outputs: "context_found_list"
+
+  # PHASE 2 - DETERMINISTIC SUPPORT ENUMERATION
+  - step_id: "P2_S1"
+    name: "list_support_by_label_for_university"
+    description: "Fast path for University context: list support target labels directly."
+    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and $state.context_found_list.0.node_type == 'University'"
+    module: "services.path_registry"
+    function: "list_all_by_label"
+    inputs:
+      target_topics: "$input.count_enumerate_targets"
+      display_limit: 5
+      start_index: "$input.start_index"
+      time: "$input.time"
+    outputs: "list_results"
+
+  - step_id: "P2_S2"
+    name: "list_support_via_path_registry"
+    description: "Enumerate support target entities through PATH_REGISTRY traversal."
+    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and $state.context_found_list.0.node_type != 'University' and $state.list_results is None"
+    module: "services.path_registry"
+    function: "list_via_path_registry"
+    inputs:
+      source_node_ids: "$state.context_found_list[*].node_id"
+      source_node_type: "$state.context_found_list.0.node_type"
+      target_topics: "$input.count_enumerate_targets"
+      display_limit: 7
+      start_index: "$input.start_index"
+      time: "$input.time"
+    outputs: "list_results"
+
+  - step_id: "P2_S3"
+    name: "filter_support_list_results"
+    description: "Filter broad support lists by concrete support keywords, keeping original results if no confident filter matches."
+    condition: "$state.list_results is not None and (($input.keywords is not None and len($input.keywords) > 0) or ($input.keyword_attributes is not None and len($input.keyword_attributes) > 0))"
+    module: "services.support_list_helpers"
+    function: "filter_support_list_results"
+    inputs:
+      list_results: "$state.list_results"
+      keywords: "$input.keywords"
+      keyword_attributes: "$input.keyword_attributes"
+      target_topics: "$input.count_enumerate_targets"
+    outputs: "list_results"
+
+  # PHASE 3 - RESULT FORMATTING
+  - step_id: "P3_S1"
+    name: "format_support_list_results"
+    description: "Format support enumeration with total count and pagination metadata."
+    condition: "$state.list_results is not None"
+    module: "services.what_relation_count_list_constraint"
+    function: "format_list_with_total"
+    inputs:
+      data: "$state.list_results"
+      original_query: "$input.original_query"
+      context_entities: "$input.context_entities"
+      context_found_list: "$state.context_found_list"
+    outputs: "formatted_answer"

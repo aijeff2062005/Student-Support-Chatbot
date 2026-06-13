@@ -1,0 +1,162 @@
+# =============================================================================
+# WHY KEYWORD → MAJOR RECOMMENDATION FLOW
+# =============================================================================
+# 
+# Mục đích: Recommend ngành/chuyên ngành dựa trên keyword user quan tâm
+#
+# Flow:
+#   1. User hỏi: "tại sao google ,aws lại độc quuyền chip AI?" → trích keyword "AI", "Chip"
+#   2. LLM extract keyword → "AI", "chip"
+#   3. Milvus search keyword → tìm Major/Specialization liên quan nhất
+#   4. Flow này nhận entity_id từ Milvus → query chi tiết để recommend
+#
+# =============================================================================
+
+flow_name: "why_keyword_major"
+description: "Recommend ngành phù hợp dựa trên keyword user quan tâm"
+
+# CÓ entity_id - từ Milvus search
+requires_entity_id: true
+
+# Entity types được hỗ trợ
+supported_entity_types:
+  - Major
+  - Specialization
+
+# Mapping để hiển thị tiếng Việt
+entity_type_mapping:
+  Major: "Ngành"
+  Specialization: "Chuyên ngành"
+
+# =============================================================================
+# TRAVERSAL STEPS
+# =============================================================================
+
+traversal_steps:
+  # Step 1: Lấy thông tin ngành/chuyên ngành được recommend (từ entity_id)
+  - step: 1
+    name: "main_entity"
+    description: "Lấy thông tin ngành được recommend từ Milvus"
+    
+    cypher_template: >
+      MATCH (m)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN m
+    
+    attributes:
+      - name
+      - description
+      - career_opportunities
+      - key_points
+
+  # Step 2: Nếu là Major → lấy chuyên ngành; Nếu là Specialization → lấy Major cha
+  - step: 2
+    name: "related_entities"
+    description: "Lấy ngành/chuyên ngành liên quan"
+    
+    cypher_template: >
+      MATCH (m)
+      WHERE m.id = $entity_id
+      OPTIONAL MATCH (m:Major)-[:INCLUDES]->(s:Specialization)
+      OPTIONAL MATCH (parent:Major)-[:INCLUDES]->(m:Specialization)
+      RETURN COALESCE(collect(DISTINCT s), []) + COALESCE(collect(DISTINCT parent), []) as related
+    
+    attributes:
+      - name
+      - career_opportunities
+      - key_points
+
+  # Step 3: Lấy chương trình đào tạo
+  - step: 3
+    name: "academic_programs"
+    description: "Lấy chương trình đào tạo của ngành"
+    
+    cypher_template: >
+      MATCH (m)-[:INCLUDES]->(ap:AcademicProgram)
+      WHERE m.id = $entity_id
+      RETURN ap
+    
+    attributes:
+      - name
+      - total_credits
+      - training_duration
+      - career_opportunities
+      - further_study_opportunities
+      - teaching_learning_method
+
+  # Step 4: Lấy chuẩn đầu ra (PLO) - quan trọng cho phần DIRECTION
+  - step: 4
+    name: "learning_outcomes"
+    description: "Lấy chuẩn đầu ra của chương trình để mô tả kỹ năng sinh viên sẽ đạt được"
+    
+    cypher_template: >
+      MATCH (m)-[:INCLUDES*1..2]->(ap:AcademicProgram)-[:HAS_PLO]->(plo:ProgramLearningOutcome)
+      WHERE m.id = $entity_id
+      RETURN DISTINCT plo
+      LIMIT 15
+
+    attributes:
+      - name
+      - description
+      - outcome
+      - category
+
+  # Step 5: Lấy xu hướng thị trường
+  - step: 5
+    name: "market_trends"
+    description: "Lấy xu hướng thị trường liên quan"
+    
+    cypher_template: >
+      MATCH (mt:MarketTrend)-[:APPLIES_TO]->(m)
+      WHERE m.id = $entity_id
+      RETURN mt
+    
+    attributes:
+      - name
+      - description
+      - growth_rate
+      - demand_gap
+      - domains
+
+  # Step 6: Lấy khoa đào tạo
+  - step: 6
+    name: "faculty_info"
+    description: "Lấy khoa đào tạo ngành này"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)
+      WHERE m.id = $entity_id
+      RETURN f
+    
+    attributes:
+      - name
+      - description
+
+  # Step 7: Lấy đối tác hợp tác (có thể nhiều → giữ LIMIT)
+  - step: 7
+    name: "partners"
+    description: "Lấy đối tác doanh nghiệp"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)
+      WHERE m.id = $entity_id
+      MATCH (cp:CollaborativePartner)-[:COLLABS_WITH]->(f)
+      RETURN cp
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+      - domains
+
+# =============================================================================
+# CONTEXT LABELS
+# =============================================================================
+context_labels:
+  main_entity: "Ngành được khuyến nghị"
+  related_entities: "Ngành/Chuyên ngành liên quan"
+  academic_programs: "Chương trình đào tạo"
+  learning_outcomes: "Chuẩn đầu ra (PLO)"
+  market_trends: "Xu hướng thị trường"
+  faculty_info: "Khoa đào tạo"
+  partners: "Đối tác doanh nghiệp"

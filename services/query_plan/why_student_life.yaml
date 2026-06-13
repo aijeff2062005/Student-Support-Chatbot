@@ -1,0 +1,137 @@
+# Flow cho câu hỏi: Vì sao nên tham gia CLB / hoạt động sinh viên?
+flow_name: "why_student_life"
+description: "Query flow để trả lời câu hỏi tại sao nên tham gia CLB, hoạt động, dịch vụ SV..."
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - Club
+  - Activity
+  - Service
+  - Facility
+
+# Có thể truy vấn theo entity_id cụ thể (CLB cụ thể) hoặc không (tổng quan)
+requires_entity_id: false
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Danh sách CLB
+  - step: 1
+    name: "clubs"
+    description: "Lấy danh sách các câu lạc bộ"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:MANAGES]->(c:Club)
+      RETURN c, f.name as faculty_name
+    
+    attributes:
+      - name
+      - description
+      - department
+      - fanpage
+      - faculty_name
+
+  # Step 2: Các hoạt động của CLB
+  - step: 2
+    name: "activities"
+    description: "Lấy danh sách hoạt động/sự kiện"
+    
+    cypher_template: >
+      MATCH (a:Activity)-[:ORGANIZED_BY]->(c:Club)
+      RETURN a, c.name as club_name
+    
+    attributes:
+      - name
+      - description
+      - address
+      - start_date
+      - end_date
+      - club_name
+
+  # Step 3: Dịch vụ hỗ trợ sinh viên
+  - step: 3
+    name: "services"
+    description: "Lấy danh sách dịch vụ hỗ trợ SV"
+    
+    cypher_template: >
+      MATCH (s:Service)
+      OPTIONAL MATCH (f:Faculty)-[:MANAGES]->(s)
+      OPTIONAL MATCH (c:Center)-[:MANAGES]->(s)
+      OPTIONAL MATCH (d:Department)-[:MANAGES]->(s)
+      RETURN DISTINCT s, 
+             COALESCE(f.name, c.name, d.name) as managed_by
+      LIMIT 30
+    
+    attributes:
+      - name
+      - managed_by
+
+  # Step 4: Cơ sở vật chất
+  - step: 4
+    name: "facilities"
+    description: "Lấy danh sách cơ sở vật chất phục vụ SV"
+    
+    cypher_template: >
+      MATCH (fac:Facility)
+      OPTIONAL MATCH (d:Department)-[:MANAGES]->(fac)
+      OPTIONAL MATCH (c:Center)-[:MANAGES]->(fac)
+      RETURN DISTINCT fac,
+             COALESCE(d.name, c.name) as managed_by
+      LIMIT 20
+    
+    attributes:
+      - name
+      - description
+      - managed_by
+
+  # Step 5: Các trung tâm/phòng ban hỗ trợ
+  - step: 5
+    name: "support_units"
+    description: "Lấy thông tin các trung tâm, phòng ban hỗ trợ SV"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(unit)
+      WHERE unit:Center OR unit:Department
+      RETURN unit
+    
+    attributes:
+      - name
+      - description
+      - website
+      - emails
+      - address
+
+  # Step 6: Thông tin Khoa (có CLB)
+  - step: 6
+    name: "faculties_with_clubs"
+    description: "Lấy thông tin các khoa có CLB"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:MANAGES]->(c:Club)
+      RETURN DISTINCT f
+    
+    attributes:
+      - name
+      - description
+
+# Output format hints for LLM
+output_hints:
+  main_topics:
+    - "Các CLB sinh viên và hoạt động"
+    - "Dịch vụ hỗ trợ sinh viên"
+    - "Cơ sở vật chất"
+    - "Sự kiện, hoạt động ngoại khóa"
+    - "Phát triển kỹ năng mềm"
+  
+  argument_structure:
+    claim: "Lý do nên tham gia CLB / hoạt động sinh viên tại GDU"
+    causes:
+      - "Phát triển kỹ năng mềm (giao tiếp, teamwork, leadership)"
+      - "Mở rộng mạng lưới quan hệ"
+      - "Trải nghiệm thực tế ngoài giảng đường"
+      - "Cân bằng học tập và giải trí"
+    capabilities:
+      - "Đa dạng CLB theo sở thích"
+      - "Nhiều hoạt động, sự kiện hấp dẫn"
+      - "Cơ sở vật chất hiện đại"
+      - "Dịch vụ hỗ trợ SV toàn diện"
+    direction: "Cách thức tham gia CLB, đăng ký hoạt động"

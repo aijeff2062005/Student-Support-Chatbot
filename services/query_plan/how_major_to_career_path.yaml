@@ -1,0 +1,42 @@
+version: "1.0"
+flow_name: "how_major_to_career_path"
+description: >
+  Workflow for HOW-MAJOR-TO-CAREER-PATH questions about role options and
+  progression paths from a target major/specialization.
+
+  Strategy:
+  - Phase 1: Retrieve reachable career position set.
+  - Phase 2: Retrieve progression edges between positions.
+
+  Fallback policy:
+  - If progression edges are missing, still answer with role option set.
+  - Do not fabricate promotion ladders beyond retrieved progression edges.
+
+supported_entity_types: ["Major", "Specialization"]
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 — CAREER OPTIONS
+  - step: 1
+    name: "career_positions"
+    description: "Fetch target career positions mapped from the major/specialization."
+    cypher_template: >
+      MATCH (m)-[:LEADS_TO]->(cp:CareerPosition)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN cp.name, cp.seniority_level, cp.potential_salary_min
+    attributes:
+      - name
+      - seniority_level
+      - potential_salary_min
+
+  # PHASE 2 — PROGRESSION EDGES
+  - step: 2
+    name: "career_progression"
+    description: "Fetch progression transitions between career positions."
+    cypher_template: >
+      MATCH (m)-[:LEADS_TO]->(cp:CareerPosition)-[:PROGRESSION_TO]->(next:CareerPosition)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN cp.name AS from_position, next.name AS to_position
+    attributes:
+      - from_position
+      - to_position

@@ -1,0 +1,175 @@
+# Flow cho câu hỏi: Vì sao học phí cao/thấp? Vì sao cần đóng học phí sớm?
+flow_name: "why_fee"
+description: "Query flow để trả lời câu hỏi về học phí, chi phí học tập"
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - Policy
+  - Major
+
+# Có thể truy vấn theo Major cụ thể hoặc tổng quan
+requires_entity_id: false
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Chính sách học phí
+  - step: 1
+    name: "tuition_policies"
+    description: "Lấy thông tin chính sách học phí"
+
+    cypher_template: >
+      MATCH (p:Policy)
+      WHERE (p.type = 'TuitionFee' OR p.name CONTAINS 'học phí' OR p.name CONTAINS 'Học phí')
+        AND {temporal_filter:p}
+      RETURN p
+
+    attributes:
+      - name
+      - description
+      - type
+      - effective_from
+      - outcome
+
+  # Step 2: Chính sách học bổng
+  - step: 2
+    name: "scholarship_policies"
+    description: "Lấy thông tin chính sách học bổng"
+
+    cypher_template: >
+      MATCH (p:Policy)
+      WHERE (p.type = 'Scholarship' OR p.name CONTAINS 'học bổng' OR p.name CONTAINS 'Học bổng')
+        AND {temporal_filter:p}
+      RETURN p
+
+    attributes:
+      - name
+      - description
+      - type
+      - effective_from
+      - outcome
+
+  # Step 3: Học phí theo ngành
+  - step: 3
+    name: "fee_by_major"
+    description: "Lấy thông tin học phí áp dụng theo ngành"
+
+    cypher_template: >
+      MATCH (p:Policy)-[:APPLIES_TO]->(m:Major)
+      WHERE (p.type = 'TuitionFee' OR p.name CONTAINS 'học phí')
+        AND {temporal_filter:p}
+      RETURN m.name as major_name, m.code as major_code,
+             p.name as policy_name, p.description as policy_description
+      LIMIT 15
+
+    attributes:
+      - major_name
+      - policy_name
+      - policy_description
+
+  # Step 4: Học bổng theo ngành
+  - step: 4
+    name: "scholarship_by_major"
+    description: "Lấy thông tin học bổng áp dụng theo ngành"
+
+    cypher_template: >
+      MATCH (p:Policy)-[:APPLIES_TO]->(m:Major)
+      WHERE (p.type = 'Scholarship' OR p.name CONTAINS 'học bổng')
+        AND {temporal_filter:p}
+      RETURN m.name as major_name, m.code as major_code,
+             p.name as policy_name, p.description as policy_description
+      LIMIT 15
+
+    attributes:
+      - major_name
+      - policy_name
+      - policy_description
+
+  # Step 5: Thông tin lệ phí tuyển sinh (từ AdmissionPolicy)
+  - step: 5
+    name: "admission_fee"
+    description: "Lấy thông tin lệ phí xét tuyển"
+
+    cypher_template: >
+      MATCH (ap:AdmissionPolicy)
+      WHERE {temporal_filter:ap}
+      RETURN ap.fee_information as fee_info,
+             ap.registration_procedure as procedure
+
+    attributes:
+      - fee_info
+      - procedure
+
+  # Step 6: Cơ sở vật chất - summary (justify học phí)
+  - step: 6
+    name: "facilities"
+    description: "Tổng hợp CSVC để justify giá trị học phí"
+
+    cypher_template: >
+      MATCH (f:Facility)
+      RETURN count(DISTINCT f) as total, collect(DISTINCT f.name)[..5] as samples
+
+    attributes:
+      - total
+      - samples
+
+  # Step 7: Giảng viên - summary (justify chất lượng)
+  - step: 7
+    name: "lecturers"
+    description: "Tổng hợp GV để justify chất lượng đào tạo"
+
+    cypher_template: >
+      MATCH (p:Person)-[:WORKS_IN]->(f:Faculty)
+      WHERE p.degree IS NOT NULL OR p.academic_rank IS NOT NULL
+      RETURN count(p) as total, count(CASE WHEN p.academic_rank CONTAINS 'TS' OR p.degree CONTAINS 'Tiến sĩ' THEN 1 END) as phd_count
+
+    attributes:
+      - total
+      - phd_count
+
+  # Step 8: Đối tác doanh nghiệp - summary (justify cơ hội việc làm)
+  - step: 8
+    name: "partners"
+    description: "Tổng hợp đối tác để justify cơ hội việc làm sau tốt nghiệp"
+
+    cypher_template: >
+      MATCH (cp:CollaborativePartner)
+      RETURN count(DISTINCT cp) as total, collect(DISTINCT cp.name)[..5] as samples
+
+    attributes:
+      - total
+      - samples
+
+  # Step 9: Hợp tác quốc tế & nghiên cứu - count only (justify chất lượng cao)
+  - step: 9
+    name: "research_cooperation"
+    description: "Tổng hợp hoạt động NCKH & hợp tác quốc tế"
+
+    cypher_template: >
+      MATCH (r:ResearchInternationalCooperation)
+      RETURN count(r) as total
+
+    attributes:
+      - total
+
+# Output format hints for LLM
+output_hints:
+  main_topics:
+    - "Mức học phí theo ngành/khoa"
+    - "Chính sách học bổng"
+    - "Lệ phí xét tuyển"
+    - "Phương thức thanh toán"
+    - "Hỗ trợ tài chính"
+    - "Giá trị nhận được (CSVC, GV, đối tác, NCKH)"
+
+  argument_structure:
+    claim: "Lý do học phí tại GDU (cao/thấp/phù hợp)"
+    causes:
+      - "Chất lượng đào tạo tương xứng (GV nhiều TS/ThS)"
+      - "Cơ sở vật chất hiện đại"
+      - "Đội ngũ giảng viên chất lượng"
+      - "Chương trình đào tạo cập nhật theo xu hướng thị trường"
+      - "Hợp tác quốc tế & NCKH mạnh"
+    capabilities:
+      - "Nhiều chính sách học bổng"
+      - "Đối tác doanh nghiệp → cơ hội việc làm cao"
+    direction: "Cách nộp học phí, xin học bổng"

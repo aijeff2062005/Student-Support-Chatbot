@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dmn:definitions xmlns:dmn="https://www.omg.org/spec/DMN/20240513/MODEL/" xmlns="https://kiegroup.org/dmn/_BCE0DDF7-1CF3-4BDB-8872-9ECA68D77250" xmlns:feel="https://www.omg.org/spec/DMN/20240513/FEEL/" xmlns:kie="https://kie.org/dmn/extensions/1.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20230324/DMNDI/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="_C360B319-8A69-4045-953A-279D465001CF" name="Addressing_rule" typeLanguage="https://www.omg.org/spec/DMN/20240513/FEEL/" namespace="https://kiegroup.org/dmn/_BCE0DDF7-1CF3-4BDB-8872-9ECA68D77250">
+  <dmn:extensionElements />
+  <dmn:decision id="_DCB7FEE0-FB7F-462C-8B4D-4E691D53EA8F" name="Addressing Role">
+    <dmn:extensionElements />
+    <dmn:variable id="_1138FC17-88CB-4C03-B428-3A055EC8D061" name="Addressing Role" />
+    <dmn:informationRequirement id="_DA37438A-96CD-4A07-997D-0A73B4024F7A">
+      <dmn:requiredInput href="#_7999794F-7B52-4A9A-9F0B-8AEB2BA05151" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_3D49B385-A1E7-4825-96AF-33F13FC96382">
+      <dmn:requiredInput href="#_E93476DA-478B-4144-9B50-4154E5AF6CFF" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_CB9570F4-35B5-42F2-B40C-F0EFBBE3D245">
+      <dmn:requiredInput href="#_9711ABDD-C628-44E6-9B05-82C71A782EF9" />
+    </dmn:informationRequirement>
+    <dmn:decisionTable id="_C6A98400-A410-4F09-890C-FE5AAD5ED7EB" hitPolicy="FIRST" preferredOrientation="Rule-as-Row">
+      <dmn:input id="_DAC39C51-BDF7-4039-A23A-C51CF645B034">
+        <dmn:inputExpression typeRef="string" id="_48A69811-00F1-4493-BBB8-B7B9E050AD82">
+          <dmn:text>user_role</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_0569A270-892C-4DF5-A48D-6E7060C0FCB4">
+        <dmn:inputExpression typeRef="Any" id="_17E4C31B-A3A1-4050-8EA9-B7600F819241">
+          <dmn:text>user_gender</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_72DC14C2-0930-40D6-A0A7-80C904A0DC59">
+        <dmn:inputExpression typeRef="Any" id="_85316DBB-201C-4517-B9A1-AA628FFA5777">
+          <dmn:text>self_gender</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:output id="_17E2DFA7-CC22-4768-A044-74E5B42C8FFB" name="self_pronoun" typeRef="string" />
+      <dmn:output id="_0D9E65F4-E6F9-40EA-A1E3-6070BB84460E" name="user_pronoun" typeRef="string" />
+      <dmn:annotation name="annotation-1" />
+      <dmn:rule id="_65B8F0AB-01FC-43D9-97CF-272984106592">
+        <dmn:inputEntry id="_73C20B95-3A98-42C5-AFEE-C28F319439AC">
+          <dmn:text>&quot;parent&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9D4F764D-5B19-4E31-A66C-322348DBBFE8">
+          <dmn:text>&quot;male&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6BF0AD58-3CBA-48AB-969A-1443D898F764">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_53C546A6-7F9A-4498-A0A5-E32E11552C19">
+          <dmn:text>&quot;em&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_EEB98B20-E1E8-497A-A92C-97D16AC0576E">
+          <dmn:text>&quot;anh&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_24F9B555-4E4E-4E9B-BD98-3EA7F6E5BB71">
+        <dmn:inputEntry id="_45E57F37-7F4E-4F4E-9B39-70C88906D482">
+          <dmn:text>&quot;parent&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6C3796DB-BD26-4754-B807-C1CEC7E8C10B">
+          <dmn:text>&quot;female&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EBE40FC8-9C4D-477B-912D-7BFFDD78FA94">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_61343580-6D6C-4FDE-899E-7261E352D81F">
+          <dmn:text>&quot;em&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_84ACFE29-B117-48E6-B821-1DDFF2FC8A02">
+          <dmn:text>&quot;chị&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_6DF05345-19E0-4F71-9FBD-445C5F3C6658">
+        <dmn:inputEntry id="_ABCCE1EE-37C1-4646-B7F6-67C84A696497">
+          <dmn:text>&quot;parent&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3F8D749B-A8DE-4363-A7D4-01C28625C258">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4EA20B01-0B2B-450B-8670-A3FB011B81B8">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_B67AC02E-7E16-4103-8A3E-393A17B3C792">
+          <dmn:text>&quot;em&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_A667E6D3-82E9-4D70-B4B7-9B1BAFD19A42">
+          <dmn:text>&quot;quý phụ huynh&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_2B7BC2DC-F0F3-43C1-A29A-D1200E9932A6">
+        <dmn:inputEntry id="_E4DA5C1D-597D-4776-9FF9-E689FEBA229A">
+          <dmn:text>&quot;grand_parent&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4BE246C8-9743-416D-87E6-EFD477A59881">
+          <dmn:text>&quot;male&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D6B96875-E37E-4DAC-B8BA-7E649B75C95B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_B093434D-6866-4489-BAE3-92ECD98DDAA5">
+          <dmn:text>&quot;cháu&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_DBBF816A-1C41-408D-ADB6-FBC9A5C3B118">
+          <dmn:text>&quot;ông&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_BE2DE55F-D59F-4754-BBAD-1990EF15DF04">
+        <dmn:inputEntry id="_409B9A35-1B1A-40C7-8677-DEB3161CB9CE">
+          <dmn:text>&quot;grand_parent&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_21B1BC73-0B08-4F5F-9CCF-589D0CA50653">
+          <dmn:text>&quot;female&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A83B5DC7-AD08-47CD-ACB5-A22BAE1BCFE1">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_71FD54D5-B91D-4EA6-8C0B-3E7FFF301744">
+          <dmn:text>&quot;cháu&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_93C77645-315B-4AC3-B397-5D83696A26D0">
+          <dmn:text>&quot;bà&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_AD4220B7-EC2C-48BD-835E-A0D6610A8190">
+        <dmn:inputEntry id="_50ACB60C-4961-4851-91FA-FEBFC8429DE3">
+          <dmn:text>&quot;grand_parent&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AFB54C1C-A2AC-402E-ABA4-98F0D2BEE98E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_274E71AE-5730-4718-9858-A15FAD54CD27">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_DFD29252-57CF-4F03-AD1B-6B0B52B7BAD3">
+          <dmn:text>&quot;cháu&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_0E00B839-41DB-4DD5-9689-A71864BC7A3E">
+          <dmn:text>&quot;ông bà&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_A262F589-F6B2-4341-BED5-E5A14E4FF962">
+        <dmn:inputEntry id="_C4D54AFF-8F8D-4AC8-83BF-3630803C0E9B">
+          <dmn:text>&quot;student&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9058468B-743D-4959-8A14-4F69CFEF5EC4">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D01F094F-956F-44CC-8982-647D8806786E">
+          <dmn:text>&quot;male&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_2A1F9506-821E-44A4-A7DF-335769FEAE0A">
+          <dmn:text>&quot;anh&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_9D432184-1CC8-439A-825F-69816DA066BF">
+          <dmn:text>&quot;em&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_76C7069B-C90F-48C3-894D-00C106060335">
+        <dmn:inputEntry id="_420B33D4-F7F4-4B25-8DC2-7A0EBDCCBC44">
+          <dmn:text>&quot;student&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C4AB8F35-52D1-4D85-A310-AF1B74182E3F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EF0BA85B-C9CD-4800-A50A-EA0668C37585">
+          <dmn:text>&quot;female&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A926BB04-3BAF-4308-A3AD-A5F19001D7B9">
+          <dmn:text>&quot;chị&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_4FF1CEEB-E448-4149-A1AF-B5A4284CAB24">
+          <dmn:text>&quot;em&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_DAC253BE-C7CB-4D74-9849-E60C303B8AAA">
+        <dmn:inputEntry id="_8A32BC45-36EF-4AB0-80EC-DB271D83D990">
+          <dmn:text>&quot;student&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9EDEC323-ED87-4495-AE25-6CBADE845C59">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_395EDAD2-F7C2-4419-B468-141146A224C1">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_88212897-3C6A-4677-83E4-ED19F0E19901">
+          <dmn:text>&quot;anh&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_27F6EB4C-830C-4628-955F-2086CFD50A8B">
+          <dmn:text>&quot;em&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_08A0A014-C25A-4AC8-8F23-66838DC62096">
+        <dmn:inputEntry id="_698DB13A-9168-494C-9B46-B8241315FF39">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A6EC74D3-736B-4E62-BBBB-009B9769FB5C">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_ED1FF6D4-8008-4E86-B6E8-6B92569A034A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_779CD867-510E-403B-B84A-7F746ABE0972">
+          <dmn:text>&quot;mình&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_2EA6A4BA-27D0-4061-A15B-FCD51C924E04">
+          <dmn:text>&quot;bạn&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+    </dmn:decisionTable>
+  </dmn:decision>
+  <dmn:inputData id="_7999794F-7B52-4A9A-9F0B-8AEB2BA05151" name="user_role">
+    <dmn:extensionElements />
+    <dmn:variable id="_4414CEEC-AEC8-4BA5-A79A-FA13CB19D6DF" name="user_role" />
+  </dmn:inputData>
+  <dmn:inputData id="_E93476DA-478B-4144-9B50-4154E5AF6CFF" name="user_gender">
+    <dmn:extensionElements />
+    <dmn:variable id="_26918756-CA55-4359-A6E8-1A198A0253CA" name="user_gender" />
+  </dmn:inputData>
+  <dmn:inputData id="_9711ABDD-C628-44E6-9B05-82C71A782EF9" name="self_gender">
+    <dmn:extensionElements />
+    <dmn:variable id="_0865630F-2656-40B1-98F2-DA948B4AF6ED" name="self_gender" />
+  </dmn:inputData>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="_9F5FC031-E42E-4643-B6EA-0146BF3DFA8D" name="DRG">
+      <di:extension>
+        <kie:ComponentsWidthsExtension>
+          <kie:ComponentWidths dmnElementRef="_C6A98400-A410-4F09-890C-FE5AAD5ED7EB">
+            <kie:width>50</kie:width>
+            <kie:width>147</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>205</kie:width>
+            <kie:width>100</kie:width>
+          </kie:ComponentWidths>
+        </kie:ComponentsWidthsExtension>
+      </di:extension>
+      <dmndi:DMNShape id="dmnshape-drg-_DCB7FEE0-FB7F-462C-8B4D-4E691D53EA8F" dmnElementRef="_DCB7FEE0-FB7F-462C-8B4D-4E691D53EA8F" isCollapsed="false">
+        <dmndi:DMNStyle id="_46464BBC-FB19-4731-8AD7-88B34E085454">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="376" y="174" width="100" height="50" />
+        <dmndi:DMNLabel id="_3967FF11-15AE-44E4-B447-05122B710233" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-_7999794F-7B52-4A9A-9F0B-8AEB2BA05151" dmnElementRef="_7999794F-7B52-4A9A-9F0B-8AEB2BA05151" isCollapsed="false">
+        <dmndi:DMNStyle id="_8BB17BEB-C38C-4A28-8FAF-4CFAA117632C">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="189" y="301" width="100" height="50" />
+        <dmndi:DMNLabel id="_7BD95C73-8BD2-4F1B-A5AD-B158CE7ADF14" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-_E93476DA-478B-4144-9B50-4154E5AF6CFF" dmnElementRef="_E93476DA-478B-4144-9B50-4154E5AF6CFF" isCollapsed="false">
+        <dmndi:DMNStyle id="_9CA8BB75-B24C-429E-BE0F-B12BA857F439">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="446" y="318" width="100" height="50" />
+        <dmndi:DMNLabel id="_95653553-227A-4D8E-A3F7-9F817347265D" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-_9711ABDD-C628-44E6-9B05-82C71A782EF9" dmnElementRef="_9711ABDD-C628-44E6-9B05-82C71A782EF9" isCollapsed="false">
+        <dmndi:DMNStyle id="_E41610F5-D2F3-4211-BC10-6C941579C821">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="687" y="237.3421052631579" width="100" height="50" />
+        <dmndi:DMNLabel id="_86BCF207-51B6-4B87-A3A2-B57873F11C61" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="dmnedge-drg-_DA37438A-96CD-4A07-997D-0A73B4024F7A" dmnElementRef="_DA37438A-96CD-4A07-997D-0A73B4024F7A">
+        <di:waypoint x="239" y="326" />
+        <di:waypoint x="376" y="199" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_3D49B385-A1E7-4825-96AF-33F13FC96382" dmnElementRef="_3D49B385-A1E7-4825-96AF-33F13FC96382">
+        <di:waypoint x="496" y="343" />
+        <di:waypoint x="426" y="224" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_CB9570F4-35B5-42F2-B40C-F0EFBBE3D245" dmnElementRef="_CB9570F4-35B5-42F2-B40C-F0EFBBE3D245">
+        <di:waypoint x="737" y="262.3421052631579" />
+        <di:waypoint x="476" y="199" />
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</dmn:definitions>

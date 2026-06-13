@@ -1,0 +1,406 @@
+version: "1.0"
+flow_name: "what_score_constraint_list"
+description: >
+  Workflow for WHAT score/quota constraint-list queries.
+  Enumerates target entities that satisfy an admission score/quota constraint by combining
+  parallel attribute-driven and relation-driven retrieval branches, then merging
+  the branch outputs into a single list result before formatting and fallback.
+
+  Strategy:
+  - Phase 1: Resolve context entities only.
+  - Branch A: Handle pure attribute constraints and entity-semantic constraints.
+  - Branch B: Handle relation-based constraints.
+  - Merge: Choose the most relevant branch result.
+  - Finalization: Apply temporal fallback, candidate-pool fallback, formatting,
+    and crawled-data fallback.
+  - The formatter step emits `formatted_answer`, an answer-ready narrative
+    scaffold. The canonical normalizer copies it into both
+    `PRIMARY_FACTS.answer.data.formatted_answer` and
+    `PRIMARY_FACTS.evidence.structured.formatted_answer`, so the response agent
+    should use it to answer while still treating `items` as the structured
+    source of truth.
+
+  Architectural notes:
+  - Branches A and B are intentionally parallel, not mutually exclusive.
+  - Branch A outputs `attr_list_results`; Branch B outputs `rel_list_results`.
+  - Merge and fallback steps preserve existing retrieval behavior and precedence.
+
+steps:
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 1 — SHARED CONTEXT RESOLUTION
+  # Resolve context entities ONLY. Never merge with primary_entities.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P1_S1"
+    name: "resolve_context_entities"
+    description: "Resolve the context entities that define the enumeration scope."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.context_entities[*].text"
+      entity_type: "$input.context_entities[*].label"
+      keywords: "$input.keywords"
+      # keyword_attributes: "$input.keyword_attributes"
+      top_k: 1
+      time: "$input.time"
+    outputs: "context_found_list"
+
+  # ════════════════════════════════════════════════════════════════
+  # BRANCH A — ATTRIBUTE-DRIVEN CONSTRAINT RETRIEVAL
+  # Sub-path A-attr runs when primary_entities is empty.
+  # "Ngành nào có tổng tín chỉ 120?", "Ngành nào có tỷ lệ tốt nghiệp > 90%?"
+  #
+  # Why P2A_S1 runs before P2X_S1:
+  #   "total_credits" lives on AcademicProgram, not directly on Major.
+  #   P2A_S1 resolves node_type → P2X_S1 builds the correct pool (AcademicProgram).
+  #   P2A_S5 maps AcademicProgram → parent Major for display.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P2A_S1"
+    name: "resolve_attribute_definitions"
+    description: "Map constraint keywords to canonical attribute definitions."
+    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "search_constraint_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: null
+      similarity_threshold: 0.6
+      top_k: 10
+    outputs: "resolved_attr_defs"
+
+  - step_id: "P2A_S1B"
+    name: "filter_node_attribute_definitions"
+    description: "Keep TitleCase-label definitions; these are node attributes."
+    condition: "$state.resolved_attr_defs is not None and len($state.resolved_attr_defs) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "filter_attribute_definitions"
+    inputs:
+      resolved_attr_defs: "$state.resolved_attr_defs"
+      definition_kind: "node"
+    outputs: "node_attr_defs"
+
+  - step_id: "P2A_S1C"
+    name: "filter_relation_attribute_definitions"
+    description: "Keep UPPERCASE-label definitions; these are relationship attributes."
+    condition: "$state.resolved_attr_defs is not None and len($state.resolved_attr_defs) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "filter_attribute_definitions"
+    inputs:
+      resolved_attr_defs: "$state.resolved_attr_defs"
+      definition_kind: "relation"
+    outputs: "relation_attr_defs"
+
+  - step_id: "P2A_S1D"
+    name: "build_relation_constraint_queries"
+    description: "Merge relation attribute names with user keywords for relation retrieval."
+    condition: "$state.relation_attr_defs is not None and len($state.relation_attr_defs) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "build_relation_constraint_queries"
+    inputs:
+      primary_texts: "$input.primary_entities[*].text"
+      keyword_attributes: "$input.keyword_attributes"
+      resolved_relation_attr_defs: "$state.relation_attr_defs"
+    outputs: "relation_constraint_queries"
+
+  - step_id: "P2A_S2"
+    name: "build_resolved_target_topics"
+    description: "Determine candidate target labels from resolved attributes or enumerated fallback topics."
+    condition: "len($input.primary_entities) == 0 and $state.context_found_list is not None"
+    module: "services.what_relation_count_list_constraint"
+    function: "get_resolved_target_topics"
+    inputs:
+      resolved_attr_defs: "$state.node_attr_defs"
+      fallback_topics: "$input.count_enumerate_targets"
+    outputs: "resolved_target_topics"
+
+  - step_id: "P2X_S1"
+    name: "build_attribute_candidate_pool"
+    description: "Build the attribute-branch candidate pool from the resolved context."
+    condition: "len($input.primary_entities) == 0 and $state.resolved_target_topics is not None"
+    module: "services.what_relation_count_list_constraint"
+    function: "build_candidate_pool"
+    inputs:
+      source_node_ids: "$state.context_found_list[*].node_id"
+      target_topics: "$state.resolved_target_topics"
+      context_node_type: "$state.context_found_list.0.node_type"
+      limit: 50
+      display_limit: 5
+      start_index: 0
+      time: "$input.time"
+    outputs: "candidate_pool"
+
+  - step_id: "P2A_S3"
+    name: "search_attributes_by_resolved_name"
+    description: "Search candidate attributes using resolved canonical attribute names."
+    condition: "len($input.primary_entities) == 0 and $state.node_attr_defs is not None and len($state.node_attr_defs) > 0 and $state.candidate_pool is not None"
+    module: "dbs.milvus_helper"
+    function: "search_entity_attributes_hybrid"
+    inputs:
+      node_ids: "$state.candidate_pool.items[*].id"
+      queries: "$state.node_attr_defs[*].attribute_name"
+      top_k: 50
+      similarity_threshold: 0.85
+      prefer_exact_name_query: true
+    outputs: "matched_attr_results"
+
+  - step_id: "P2A_S4"
+    name: "search_attributes_by_raw_keywords"
+    description: "Search candidate attributes using raw keywords when canonical resolution is empty."
+    condition: "len($input.primary_entities) == 0 and ($state.node_attr_defs is None or len($state.node_attr_defs) == 0) and ($state.relation_attr_defs is None or len($state.relation_attr_defs) == 0) and ($state.matched_attr_results is None or len($state.matched_attr_results) == 0)"
+    module: "dbs.milvus_helper"
+    function: "search_entity_attributes_hybrid"
+    inputs:
+      node_ids: "$state.candidate_pool.items[*].id"
+      queries: "$input.keyword_attributes"
+      top_k: 50
+      similarity_threshold: 0.60
+    outputs: "matched_attr_results"
+
+  - step_id: "P2A_S5"
+    name: "build_attribute_list_results"
+    description: "Convert attribute matches into filtered list results for branch merge."
+    condition: "len($input.primary_entities) == 0 and $state.matched_attr_results is not None and len($state.matched_attr_results) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "build_list_from_attr_matches"
+    inputs:
+      context_node_ids: "$state.context_found_list[*].node_id"
+      matched_attr_results: "$state.matched_attr_results"
+      target_topics: "$input.count_enumerate_targets"
+      display_limit: 5
+      start_index: "$input.start_index"
+    outputs: "attr_list_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # SHARED POOL FOR BRANCH A-ENTITY + BRANCH B
+  # Must run BEFORE both P2A_S6 and P2B_S1 since both consume candidate_pool.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P2X_S1B"
+    name: "build_state_major_candidate_pool_for_admission_score"
+    description: "Scope school-level cutoff score lookups to interested/potential majors from conversation state."
+    condition: "len($input.primary_entities) > 0 and $state.context_found_list is not None and len($state.context_found_list) > 0 and $state.context_found_list.0.node_type == 'University' and $state.list_results is None"
+    module: "services.what_relation_count_list_constraint"
+    function: "build_state_major_candidate_pool_for_admission_score"
+    inputs:
+      primary_entities: "$input.primary_entities"
+      context_entities: "$input.context_entities"
+      keyword_attributes: "$input.keyword_attributes"
+      keywords: "$input.keywords"
+      original_query: "$input.original_query"
+      potential_majors: "$input.potential_majors"
+      interested_majors: "$input.interested_majors"
+      time: "$input.time"
+      display_limit: 5
+      start_index: 0
+    outputs: "candidate_pool"
+
+  - step_id: "P2X_S1C"
+    name: "build_admission_score_major_clarification"
+    description: "Ask for a target major when the user asks school-level cutoff score and no state major context exists."
+    condition: "len($input.primary_entities) > 0 and $state.context_found_list is not None and len($state.context_found_list) > 0 and $state.context_found_list.0.node_type == 'University' and $state.list_results is None and $state.candidate_pool is None"
+    module: "services.what_relation_count_list_constraint"
+    function: "build_admission_score_major_clarification"
+    inputs:
+      primary_entities: "$input.primary_entities"
+      context_entities: "$input.context_entities"
+      keyword_attributes: "$input.keyword_attributes"
+      keywords: "$input.keywords"
+      original_query: "$input.original_query"
+      time: "$input.time"
+      display_limit: 5
+      start_index: "$input.start_index"
+    outputs: "list_results"
+
+  - step_id: "P2X_S2"
+    name: "build_shared_candidate_pool"
+    description: "Build the shared candidate pool for entity-semantic and relation branches."
+    condition: "len($input.primary_entities) > 0 and $state.context_found_list is not None and len($state.context_found_list) > 0 and $state.list_results is None and $state.candidate_pool is None"
+    module: "services.what_relation_count_list_constraint"
+    function: "build_candidate_pool"
+    inputs:
+      source_node_ids: "$state.context_found_list[*].node_id"
+      target_topics: "$input.count_enumerate_targets"
+      context_node_type: "$state.context_found_list.0.node_type"
+      limit: 200
+      display_limit: 5
+      start_index: 0
+      time: "$input.time"
+    outputs: "candidate_pool"
+
+  # ════════════════════════════════════════════════════════════════
+  # BRANCH A — ENTITY-SEMANTIC CONSTRAINT RETRIEVAL
+  # Sub-path A-entity runs when primary_entities is non-empty.
+  # "Ngành nào học để làm bác sĩ nhi?", "Có ngành nào liên quan đến lập trình?"
+  #
+  # Step 1: search_entity_by_name (existing Milvus helper) — find semantically
+  #         matching entities by name+description embedding.
+  # Step 2: intersect_pool_with_entities — pure join with candidate_pool,
+  #         no new search logic, just set intersection + score attachment.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P2A_S6"
+    name: "search_entities_in_shared_candidate_pool"
+    description: "Apply semantic entity filtering inside the shared candidate pool."
+    condition: "len($input.primary_entities) > 0 and $state.candidate_pool is not None"
+    module: "services.what_relation_count_list_constraint"
+    function: "search_entities_in_candidate_pool"
+    inputs:
+      candidate_pool: "$state.candidate_pool"
+      primary_texts: "$input.primary_entities[*].text"
+      primary_labels: "$input.primary_entities[*].label"
+      entity_types: "$input.count_enumerate_targets"
+      keywords: "$input.keywords"
+      # keyword_attributes: "$input.keyword_attributes"
+      top_k: 50
+      threshold: 0.45
+      display_limit: 5
+      start_index: "$input.start_index"
+    outputs: "attr_list_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # BRANCH B — RELATION-DRIVEN CONSTRAINT RETRIEVAL
+  # "Ngành nào có điểm chuẩn từ 17 điểm trở lên?"
+  # B1→B2→B3 do relation search + join → rel_list_results.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P2B_S1"
+    name: "search_relations_in_shared_candidate_pool"
+    description: "Apply relation-based filtering inside the shared candidate pool."
+    condition: "$state.candidate_pool is not None and $state.relation_constraint_queries is not None and len($state.relation_constraint_queries) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "search_relations_in_candidate_pool"
+    inputs:
+      candidate_pool: "$state.candidate_pool"
+      primary_texts: "$state.relation_constraint_queries"
+      keywords: "$state.relation_attr_defs[*].attribute_name"
+      original_query: "$input.original_query"
+      top_k: 50
+      similarity_threshold: 0.35
+      min_final_score: 0.45
+      display_limit: 5
+      start_index: "$input.start_index"
+      time: "$input.time"
+    outputs: "rel_list_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # MERGE — PICK THE MOST RELEVANT BRANCH RESULT
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P3_S1"
+    name: "merge_constraint_branch_results"
+    description: "Merge attribute and relation branch outputs into the final filtered list."
+    condition: "$state.attr_list_results is not None or $state.rel_list_results is not None"
+    module: "services.what_relation_count_list_constraint"
+    function: "merge_branch_results"
+    inputs:
+      attr_filtered_results: "$state.attr_list_results"
+      rel_filtered_results: "$state.rel_list_results"
+      keywords: "$input.keywords"
+    outputs: "list_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # P3_S2 — TEMPORAL FALLBACK (check previous year cutoff)
+  #
+  # When current-year search returned no cutoff data, query Neo4j
+  # directly for the most recent year that HAS cutoff_score.
+  # E.g. "Điểm chuẩn RHM?" in 2026 → finds 2025 data (22.5, 20.5, 700).
+  # Returns one of two explicit shapes:
+  # - current_description_fallback: answer from the current primary entity
+  #   description only, without mixing historical cutoff rows.
+  # - temporal_fallback: answer from historical cutoff rows only.
+  #
+  # Runs BEFORE P3_S3 (candidate_pool_fallback) so historical data takes
+  # priority over the generic "chưa có dữ liệu" message.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P3_S2"
+    name: "build_cutoff_temporal_fallback"
+    description: "Recover historical cutoff or quota data when the current time scope has no match."
+    condition: "$state.list_results is None and $state.context_found_list is not None and len($state.context_found_list) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "get_cutoff_temporal_fallback"
+    inputs:
+      context_node_ids: "$state.context_found_list[*].node_id"
+      context_node_type: "$state.context_found_list.0.node_type"
+      keyword_attributes: "$input.keyword_attributes"
+      time: "$input.time"
+      primary_texts: "$input.primary_entities[*].text"
+      primary_labels: "$input.primary_entities[*].label"
+    outputs: "list_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # P3_S3 — CANDIDATE POOL FALLBACK
+  #
+  # When candidate_pool has items (Major exists, AdmissionMethods found)
+  # but both Branch A and Branch B returned empty (no matching attribute
+  # data — e.g., 2026 provisional major without cutoff_score), use
+  # candidate_pool directly so the response agent can say "Ngành X có
+  # N phương thức xét tuyển nhưng chưa có thông tin điểm chuẩn" instead
+  # of falling to crawled_data which wrongly says "ngành không tồn tại".
+  #
+  # Only triggers when P3_S2 (temporal fallback) also returned nothing
+  # — i.e. no historical cutoff data exists at all (truly new major).
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P3_S3"
+    name: "build_candidate_pool_fallback"
+    description: "Return the shared candidate pool when filtered branches are empty but scoped entities exist."
+    condition: "$state.list_results is None and $state.candidate_pool is not None and $state.candidate_pool.total > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "candidate_pool_as_constraint_fallback"
+    inputs:
+      candidate_pool: "$state.candidate_pool"
+      keywords: "$input.keywords"
+      keyword_attributes: "$input.keyword_attributes"
+    outputs: "list_results"
+
+  # ════════════════════════════════════════════════════════════════
+  # FINALIZATION — FORMAT + CRAWLED-DATA FALLBACK
+  #
+  # P4_S1 intentionally runs before crawled-data fallback whenever graph or
+  # graph-fallback data exists. Its `formatted_answer` output is the preferred
+  # narrative scaffold for WHAT-CONSTRAINT-LIST responses; it preserves
+  # current-year context, temporal fallback wording, candidate-pool fallback
+  # explanations, pagination, and matched-signal highlights. Downstream
+  # normalization attaches this value to canonical answer data and evidence.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P4_S1"
+    name: "format_answer"
+    description: >
+      Build the answer-ready formatted response for constraint-list results.
+      This output should be used by the response layer as the primary narrative
+      scaffold, with `list_results.items` retained as the structured facts.
+    condition: "$state.list_results is not None"
+    module: "services.what_relation_count_list_constraint"
+    function: "format_constraint_list"
+    inputs:
+      data: "$state.list_results"
+      keywords: "$input.keywords"
+      original_query: "$input.original_query"
+      time: "$input.time"
+    outputs: "formatted_answer"
+
+  - step_id: "P4_S2"
+    name: "crawled_data_search"
+    description: "Search crawled data when no constrained graph result is available."
+    condition: "($state.list_results is None or ($state.list_results is not None and $state.list_results.total == 0)) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "search_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      top_k: 5
+    outputs: "crawled_data_results"
+
+  - step_id: "P4_S3"
+    name: "generate_crawled_data"
+    description: "Generate and cache crawled data when all constrained retrieval paths are empty."
+    condition: "($state.list_results is None or $state.list_results.total == 0) and not $state.crawled_data_results and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+    module: "dbs.milvus_helper"
+    function: "generate_and_save_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      collection_name: "knowledge_university_crawled_data"
+    outputs: "crawled_data_results"

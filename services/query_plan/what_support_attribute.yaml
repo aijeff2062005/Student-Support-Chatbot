@@ -1,0 +1,98 @@
+version: "1.0"
+flow_name: "what_support_attribute"
+description: >
+  Workflow for WHAT-SUPPORT-ATTRIBUTE queries.
+  Handles single-fact support policy questions about scholarships, tuition
+  payment, late payment consequences, student support, and related student
+  policy attributes.
+
+  Strategy:
+  - Resolve the support/policy entity when the user names one.
+  - Retrieve structured node attributes first.
+  - Fall back to relation attributes connected to the resolved policy/support
+    entity.
+  - If no entity resolves, run global attribute search using the full question.
+  - Do not use crawled-data generation for policy-sensitive support answers.
+
+steps:
+  # PHASE 1 - SUPPORT/POLICY ENTITY RESOLUTION
+  - step_id: "P1_S1"
+    name: "resolve_support_policy_entity"
+    description: "Resolve named support policies such as scholarship, tuition payment, or student support."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.primary_entities[*].text"
+      entity_type: "$input.primary_entities[*].label"
+      keywords: "$input.keywords"
+      top_k: 1
+      time: "$input.time"
+    outputs: "primary_found_list"
+
+  # PHASE 2 - STRUCTURED ATTRIBUTE RETRIEVAL
+  - step_id: "P2_S1"
+    name: "resolve_support_attribute_definitions"
+    description: "Map support-policy wording to canonical schema attribute names."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0"
+    module: "dbs.milvus_helper"
+    function: "search_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: "$state.primary_found_list.0.node_type"
+      similarity_threshold: 0.65
+      top_k: 3
+    outputs: "resolved_attribute_definitions"
+
+  - step_id: "P2_S2"
+    name: "fetch_support_entity_attributes"
+    description: "Fetch direct policy/support node attributes using resolved schema attribute names."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and $state.resolved_attribute_definitions and len($state.resolved_attribute_definitions) > 0"
+    module: "tools.QA.services.neo4j_service"
+    class: "Neo4jService"
+    method: "get_node_attributes_for_query_plan"
+    inputs:
+      node_ids: "$state.primary_found_list[*].node_id"
+      attribute_keys: "$state.resolved_attribute_definitions[*].attribute_name"
+      time: "$input.time"
+    outputs: "entity_attributes"
+
+  - step_id: "P2_S3"
+    name: "search_support_relation_attributes"
+    description: "Search support-policy relation attributes when direct node attributes are empty."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and not $state.entity_attributes"
+    module: "dbs.milvus_helper"
+    function: "search_relation_attributes_hybrid"
+    inputs:
+      node_ids: "$state.primary_found_list[*].node_id"
+      queries: "$input.keyword_attributes"
+      top_k: 3
+      similarity_threshold: 0.7
+    outputs: "relation_attributes"
+
+  # PHASE 3 - GLOBAL STRUCTURED FALLBACK
+  - step_id: "P3_S1"
+    name: "search_global_support_entity_attributes"
+    description: "Search policy/support attributes globally when no support entity resolves, prioritizing compact support keywords over the full sentence."
+    condition: "not $state.entity_attributes and not $state.relation_attributes"
+    module: "dbs.milvus_helper"
+    function: "search_entity_attributes_hybrid"
+    inputs:
+      node_ids: []
+      queries: "$input.keywords"
+      top_k: 2
+      similarity_threshold: 0.6
+      prefer_exact_name_query: true
+    outputs: "entity_attributes_fallback"
+
+  - step_id: "P3_S2"
+    name: "search_global_support_relation_attributes"
+    description: "Search relation attributes globally when global entity attributes are empty."
+    condition: "not $state.entity_attributes and not $state.relation_attributes and not $state.entity_attributes_fallback"
+    module: "dbs.milvus_helper"
+    function: "search_relation_attributes_hybrid"
+    inputs:
+      node_ids: []
+      queries: "$input.keywords"
+      top_k: 5
+      similarity_threshold: 0.6
+    outputs: "relation_attributes_fallback"

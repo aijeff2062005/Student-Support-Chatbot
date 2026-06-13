@@ -1,0 +1,131 @@
+# Flow cho câu hỏi: Vì sao có điểm cộng ưu tiên? Vì sao cần quy đổi điểm?
+flow_name: "why_policy"
+description: "Query flow để trả lời câu hỏi về chính sách ưu tiên, điểm cộng, quy đổi điểm..."
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - Policy
+  - AdmissionPolicy
+
+# Flow này KHÔNG cần entity_id cụ thể
+requires_entity_id: false
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Chính sách ưu tiên từ AdmissionPolicy
+  - step: 1
+    name: "priority_policy"
+    description: "Lấy thông tin chính sách ưu tiên"
+    
+    cypher_template: >
+      MATCH (ap:AdmissionPolicy)
+      WHERE {temporal_filter:ap}
+      RETURN ap.priority_policy as priority_policy,
+             ap.bonus_point_policy as bonus_point_policy,
+             ap.english_score_conversion as english_conversion,
+             ap.additional_admission_conditions as additional_conditions,
+             ap.major_streaming_criteria as streaming_criteria,
+             ap.name as policy_name
+    
+    attributes:
+      - priority_policy
+      - bonus_point_policy
+      - english_conversion
+      - additional_conditions
+      - streaming_criteria
+      - policy_name
+
+  # Step 2: Các chính sách chung
+  - step: 2
+    name: "general_policies"
+    description: "Lấy các chính sách chung"
+    
+    cypher_template: >
+      MATCH (p:Policy)
+      WHERE {temporal_filter:p}
+      RETURN p
+    
+    attributes:
+      - name
+      - description
+      - type
+      - effective_from
+      - outcome
+
+  # Step 3: Chính sách áp dụng theo ngành
+  - step: 3
+    name: "policy_by_major"
+    description: "Lấy chính sách áp dụng theo ngành cụ thể"
+    
+    cypher_template: >
+      MATCH (p:Policy)-[:APPLIES_TO]->(m:Major)
+      WHERE {temporal_filter:p}
+      RETURN m.name as major_name, m.code as major_code,
+             p.name as policy_name, p.type as policy_type,
+             p.description as policy_description
+      LIMIT 15
+
+    attributes:
+      - major_name
+      - policy_name
+      - policy_type
+      - policy_description
+
+  # Step 4: Phương thức xét tuyển và điều kiện
+  - step: 4
+    name: "admission_methods"
+    description: "Lấy phương thức xét tuyển và điều kiện áp dụng"
+    
+    cypher_template: >
+      MATCH (am:AdmissionMethod)-[:BELONGS_TO]->(ap:AdmissionPolicy)
+      WHERE {temporal_filter:ap}
+      RETURN am.name as method_name, 
+             am.selection_method as selection_method,
+             am.code as method_code
+    
+    attributes:
+      - method_name
+      - selection_method
+
+  # Step 5: Điểm chuẩn/chỉ tiêu theo phương thức
+  - step: 5
+    name: "cutoff_by_method"
+    description: "Lấy điểm chuẩn theo phương thức xét tuyển"
+    
+    cypher_template: >
+      MATCH (am:AdmissionMethod)-[r:APPLIES_TO]->(m:Major)
+      WHERE {temporal_filter:r}
+      RETURN m.name as major_name, 
+             am.name as method_name,
+             r.cutoff_score as cutoff_score,
+             r.quota as quota
+      ORDER BY m.name, am.name
+      LIMIT 15
+    
+    attributes:
+      - major_name
+      - method_name
+      - cutoff_score
+      - quota
+
+# Output format hints for LLM
+output_hints:
+  main_topics:
+    - "Chính sách điểm cộng ưu tiên"
+    - "Quy đổi điểm tiếng Anh (IELTS, TOEFL...)"
+    - "Điều kiện xét tuyển đặc biệt"
+    - "Chính sách học bổng, miễn giảm"
+    - "Tiêu chí phân luồng ngành"
+  
+  argument_structure:
+    claim: "Lý do có chính sách ưu tiên/điểm cộng"
+    causes:
+      - "Đảm bảo công bằng cho các đối tượng khác nhau"
+      - "Thu hút sinh viên giỏi"
+      - "Phù hợp với quy định của Bộ GD-ĐT"
+      - "Khuyến khích học ngoại ngữ, chứng chỉ quốc tế"
+    capabilities:
+      - "Đa dạng phương thức xét tuyển"
+      - "Linh hoạt trong đánh giá năng lực"
+      - "Hỗ trợ thí sinh nhiều đối tượng"
+    direction: "Cách áp dụng chính sách, quy đổi điểm"

@@ -1,0 +1,59 @@
+version: "1.0"
+flow_name: "how_campus_contact"
+description: >
+  Workflow for HOW-CAMPUS-CONTACT questions about how to contact departments,
+  reach campuses, and find official support channels.
+
+  Strategy:
+  - Phase 1: Retrieve direct department-level contact channels.
+  - Phase 2: Retrieve campus location context for visit/navigation.
+  - Phase 3: Retrieve university-level fallback contacts.
+
+  Fallback policy:
+  - Prioritize the most specific contact target first (department -> campus -> university).
+  - If a detailed channel is missing, provide the next official channel instead of guessing.
+
+supported_entity_types:
+  - University
+  - Campus
+  - Department
+
+requires_entity_id: false
+
+traversal_steps:
+  # PHASE 1 — CAMPUS LOCATION CONTEXT
+  - step: 1
+    name: "campus_locations"
+    description: "Fetch campus names and addresses for onsite visits."
+    cypher_template: >
+      MATCH (u:University)-[:HAS_CAMPUS]->(c:Campus)
+      RETURN c.name, c.address
+    attributes:
+      - name
+      - address
+
+  # PHASE 2 — DIRECT CONTACT CHANNELS
+  - step: 2
+    name: "department_contacts"
+    description: "Fetch official department contact channels."
+    cypher_template: >
+      MATCH (d:Department)
+      RETURN d.name, d.address, d.emails, d.website
+    attributes:
+      - name
+      - address
+      - emails
+      - website
+
+  # PHASE 3 — UNIVERSITY-LEVEL FALLBACK CONTACTS
+  - step: 3
+    name: "university_contacts"
+    description: "Fetch main university contact channels as fallback/safety net."
+    cypher_template: >
+      MATCH (u:University)
+      RETURN u.phones, u.emails, u.website, u.address
+    attributes:
+      - phones
+      - emails
+      - website
+      - address

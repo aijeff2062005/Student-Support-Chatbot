@@ -1,0 +1,106 @@
+version: "1.0"
+flow_name: "what_ops_major_spec_academic"
+description: >
+  WHAT-ATTRIBUTES workflow for Major/Specialization/AcademicProgram questions.
+  Business rule: any attribute request over Major, Specialization, or
+  AcademicProgram is normalized back to the parent Major first. From Major,
+  check direct Major->AcademicProgram. If no direct AcademicProgram exists,
+  expand Major->Specialization->AcademicProgram and return all branches.
+
+steps:
+  - step_id: "P1_S1"
+    name: "resolve_primary_entity"
+    description: "Resolve the user-mentioned Major/Specialization/AcademicProgram."
+    condition: "$input.primary_entities is not None and len($input.primary_entities) > 0"
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.primary_entities[*].text"
+      entity_type: "$input.primary_entities[*].label"
+      keywords: "$input.keywords"
+      top_k: 1
+      threshold: 0.8
+      time: "$input.time"
+    outputs: "primary_found_list"
+
+  - step_id: "P1_S2"
+    name: "resolve_major_scope"
+    description: "Normalize the resolved entity back to its parent Major."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0"
+    module: "dbs.what_ops_major_spec_academic"
+    function: "resolve_major_scope_from_entity"
+    inputs:
+      found_list: "$state.primary_found_list"
+      time: "$input.time"
+    outputs: "major_scope"
+
+  - step_id: "P2_S1"
+    name: "resolve_attribute_keys"
+    description: "Resolve requested attribute keywords for Major/Specialization/AcademicProgram data."
+    module: "dbs.what_ops_major_spec_academic"
+    function: "resolve_major_spec_academic_attribute_keys"
+    inputs:
+      keyword_attributes: "$input.keyword_attributes"
+      top_k: 5
+      similarity_threshold: 0.6
+    outputs: "major_spec_academic_attribute_keys"
+
+  - step_id: "P2_S2"
+    name: "resolve_state_major_scope"
+    description: "After attribute resolution, resolve omitted Major/Specialization scope from up to two interested/potential majors; otherwise prepare a clarification."
+    condition: "($input.primary_entities is None or len($input.primary_entities) == 0) and ($state.major_scope is None or not $state.major_scope) and ($input.primary_topic == 'major' or $input.primary_topic == 'program')"
+    module: "dbs.what_ops_major_spec_academic"
+    function: "resolve_major_scope_from_state_majors"
+    inputs:
+      interested_majors: "$input.interested_majors"
+      potential_majors: "$input.potential_majors"
+      keyword_attributes: "$input.keyword_attributes"
+      attribute_keys: "$state.major_spec_academic_attribute_keys"
+      time: "$input.time"
+    outputs: "major_scope"
+
+  - step_id: "P3_S1"
+    name: "collect_major_spec_academic_bundle"
+    description: "Read Major-rooted academic tree, or pass through state-major clarification when no single scope exists."
+    condition: "$state.major_scope is not None"
+    module: "dbs.what_ops_major_spec_academic"
+    function: "collect_major_spec_academic_bundle"
+    inputs:
+      major_scope: "$state.major_scope"
+      attribute_keys: "$state.major_spec_academic_attribute_keys"
+      keyword_attributes: "$input.keyword_attributes"
+      time: "$input.time"
+    outputs: "major_spec_academic_bundle"
+
+  - step_id: "P3_S2"
+    name: "format_major_spec_academic_answer"
+    description: "Produce a factual formatted answer for the response LLM."
+    condition: "$state.major_spec_academic_bundle is not None"
+    module: "dbs.what_ops_major_spec_academic"
+    function: "format_major_spec_academic_answer"
+    inputs:
+      bundle: "$state.major_spec_academic_bundle"
+      original_query: "$input.original_query"
+    outputs: "formatted_answer"
+
+#  - step_id: "P4_S1"
+#    name: "crawled_data_search"
+#    description: "Fallback only when no graph bundle can be built."
+#    condition: "not $state.major_spec_academic_bundle or $state.major_spec_academic_bundle.status == 'empty' or $state.major_spec_academic_bundle.status == 'major_scope_not_found'"
+#    module: "dbs.milvus_helper"
+#    function: "search_crawled_data"
+#    inputs:
+#      question: "$input.original_query"
+#      top_k: 5
+#    outputs: "crawled_data_results"
+#
+#  - step_id: "P4_S2"
+#    name: "generate_crawled_data"
+#    description: "Generate and cache crawled data when graph bundle and cached fallback are empty."
+#    condition: "(not $state.major_spec_academic_bundle or $state.major_spec_academic_bundle.status == 'empty' or $state.major_spec_academic_bundle.status == 'major_scope_not_found') and not $state.crawled_data_results"
+#    module: "dbs.milvus_helper"
+#    function: "generate_and_save_crawled_data"
+#    inputs:
+#      question: "$input.original_query"
+#      collection_name: "knowledge_university_crawled_data"
+#    outputs: "crawled_data_results"

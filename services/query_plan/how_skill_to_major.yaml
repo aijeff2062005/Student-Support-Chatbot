@@ -1,0 +1,28 @@
+version: "1.0"
+flow_name: "how_skill_to_major"
+description: >
+  Workflow for HOW-SKILL-TO-MAJOR questions about mapping a user skill to
+  relevant majors/specializations.
+
+  Strategy:
+  - Phase 1: Retrieve majors/specializations connected to careers requiring this skill.
+
+  Fallback policy:
+  - Keep recommendations anchored to retrieved major evidence only.
+  - Do not infer fit scores or rankings not present in structured data.
+
+supported_entity_types: ["Skill"]
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 — SKILL-TO-MAJOR MAPPING
+  - step: 1
+    name: "related_majors"
+    description: "Fetch majors/specializations linked to careers requiring the target skill."
+    cypher_template: >
+      MATCH (m)-[:LEADS_TO]->(:CareerPosition)-[:REQUIRES]->(s:Skill)
+      WHERE s.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN DISTINCT m.name, m.description
+    attributes:
+      - name
+      - description

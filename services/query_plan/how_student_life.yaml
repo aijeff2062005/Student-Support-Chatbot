@@ -1,0 +1,52 @@
+version: "1.0"
+flow_name: "how_student_life"
+description: >
+  Workflow for HOW-STUDENT-LIFE questions about joining clubs, participating in
+  activities, and using student support services.
+
+  Strategy:
+  - Phase 1: Retrieve club participation options.
+  - Phase 2: Retrieve activity/event opportunities.
+  - Phase 3: Retrieve support-service references.
+
+  Fallback policy:
+  - Prioritize official club/activity/service records.
+  - If one section is missing, provide actionable guidance from available sections only.
+
+supported_entity_types: ["University"]
+requires_entity_id: false
+
+traversal_steps:
+  # PHASE 1 — CLUB PARTICIPATION OPTIONS
+  - step: 1
+    name: "clubs_overview"
+    description: "Fetch clubs and basic participation channels."
+    cypher_template: >
+      MATCH (c:Club)
+      RETURN c.name, c.description, c.fanpage
+    attributes:
+      - name
+      - description
+      - fanpage
+
+  # PHASE 2 — ACTIVITIES & EVENTS
+  - step: 2
+    name: "activities"
+    description: "Fetch activity opportunities and start-date signals."
+    cypher_template: >
+      MATCH (a:Activity)
+      RETURN a.name, a.description, a.start_date
+    attributes:
+      - name
+      - description
+      - start_date
+
+  # PHASE 3 — STUDENT SUPPORT SERVICES
+  - step: 3
+    name: "support_services_detail"
+    description: "Fetch student support service references."
+    cypher_template: >
+      MATCH (s:Service)
+      RETURN s.name
+    attributes:
+      - name

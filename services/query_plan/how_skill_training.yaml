@@ -1,0 +1,58 @@
+version: "1.0"
+flow_name: "how_skill_training"
+description: >
+  Workflow for HOW-SKILL-TRAINING questions about how to build a target skill,
+  where it is taught, and where it is applied.
+
+  Strategy:
+  - Phase 1: Retrieve skill baseline profile.
+  - Phase 2: Retrieve courses teaching the skill.
+  - Phase 3: Retrieve career positions requiring the skill.
+
+  Fallback policy:
+  - If one section is missing, answer with remaining structured sections.
+  - Never infer tool/certification/job mappings not present in graph evidence.
+
+supported_entity_types: ["Skill"]
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 — SKILL BASELINE
+  - step: 1
+    name: "skill_info"
+    description: "Fetch skill baseline including domains, tools, and certifications."
+    cypher_template: >
+      MATCH (s:Skill)
+      WHERE s.id = $entity_id
+      RETURN s.name, s.description, s.skill_domains,
+             s.related_tools, s.related_certifications
+    attributes:
+      - name
+      - description
+      - skill_domains
+      - related_tools
+      - related_certifications
+
+  # PHASE 2 — TRAINING PATHWAY (COURSES)
+  - step: 2
+    name: "courses_teaching_skill"
+    description: "Fetch courses that teach the target skill."
+    cypher_template: >
+      MATCH (c:Course)-[:TEACHES]->(s:Skill)
+      WHERE s.id = $entity_id
+      RETURN c.name, c.description
+    attributes:
+      - name
+      - description
+
+  # PHASE 3 — CAREER APPLICATION
+  - step: 3
+    name: "career_positions_using_skill"
+    description: "Fetch career positions requiring the target skill."
+    cypher_template: >
+      MATCH (cp:CareerPosition)-[:REQUIRES]->(s:Skill)
+      WHERE s.id = $entity_id
+      RETURN cp.name, cp.seniority_level
+    attributes:
+      - name
+      - seniority_level

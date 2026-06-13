@@ -1,0 +1,159 @@
+version: "1.0"
+flow_name: "what_support_relation"
+description: >
+  Workflow for WHAT-SUPPORT-RELATION queries.
+  This is a narrow student-support specialization of what_relation. It answers
+  relationship questions around support policies, tuition/payment policies,
+  scholarships, student documents, responsible offices, activities, clubs,
+  services, and other current-student support entities.
+
+  Strategy:
+  - Resolve context and primary entities separately, like what_relation.
+  - Prefer ID-based graph relation lookup when both sides resolve.
+  - If the primary side is keyword-like, search relation attributes from the
+    resolved support context, then recover graph candidates.
+  - Use label traversal only as a controlled fallback.
+  - Compact relation output with the same canonical contract as what_relation.
+  - Do not use crawled-data generation for policy-sensitive support answers.
+
+steps:
+  # PHASE 1 - RESOLVE SUPPORT RELATION SIDES
+  - step_id: "P1_S1"
+    name: "resolve_support_context_entities"
+    description: "Resolve the context/anchor side of a support relation query."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.context_entities[*].text"
+      entity_type: "$input.context_entities[*].label"
+      keywords: "$input.keywords"
+      top_k: 1
+      threshold: 0.72
+      time: "$input.time"
+    outputs: "context_found_list"
+
+  - step_id: "P1_S2"
+    name: "prepare_support_primary_entities"
+    description: "Normalize the target side of the support relation query."
+    module: "dbs.graph_search_helpers"
+    function: "prepare_entities_for_search"
+    inputs:
+      entities: "$input.primary_entities"
+      expand_types: true
+    outputs: "primary_search_params"
+
+  - step_id: "P1_S3"
+    name: "resolve_support_primary_entities"
+    description: "Resolve the target side when it is expressed as a concrete entity."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$state.primary_search_params.entity_name"
+      entity_type: "$state.primary_search_params.entity_type"
+      keywords: "$input.keywords"
+      top_k: 2
+      threshold: 0.68
+      time: "$input.time"
+    outputs: "primary_found_list"
+
+  - step_id: "P1_S4"
+    name: "build_support_relation_queries"
+    description: "Build compact support keywords for relation-attribute recovery."
+    condition: "$state.primary_found_list is None or len($state.primary_found_list) == 0"
+    module: "dbs.graph_search_helpers"
+    function: "merge_search_queries"
+    inputs:
+      primary_texts: "$input.primary_entities[*].text"
+      keyword_attributes: "$input.keyword_attributes"
+    outputs: "search_queries"
+
+  # PHASE 2A - RESOLVED SIDES: ID-BASED RELATION LOOKUP
+  - step_id: "P2A_S1"
+    name: "fetch_support_subgraph_by_ids"
+    description: "Run a bounded graph relation search for resolved support entities."
+    condition: "$state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0"
+    module: "dbs.graph_search_helpers"
+    function: "find_relation_with_ids"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      primary_ids: "$state.primary_found_list[*].node_id"
+      max_depth: 2
+      time: "$input.time"
+    outputs: "subgraph"
+
+  # PHASE 2B - UNRESOLVED TARGET: RELATION ATTRIBUTE RECOVERY
+  - step_id: "P2B_S1"
+    name: "search_support_relation_attributes"
+    description: "Search support relation attributes from the resolved context side."
+    condition: "$state.context_found_list is not None and len($state.context_found_list) > 0 and ($state.primary_found_list is None or len($state.primary_found_list) == 0)"
+    module: "dbs.milvus_helper"
+    function: "search_relation_full_text"
+    inputs:
+      node_ids: "$state.context_found_list[*].node_id"
+      queries: "$state.search_queries"
+      top_k: 10
+      similarity_threshold: 0.68
+      min_final_score: 0.68
+    outputs: "relation_attr_results"
+
+  - step_id: "P2B_S2"
+    name: "build_support_primary_candidates_from_relation_attributes"
+    description: "Recover candidate target node IDs from matched support relation attributes."
+    condition: "$state.relation_attr_results is not None and len($state.relation_attr_results) > 0"
+    module: "dbs.graph_search_helpers"
+    function: "extract_node_ids_from_relation_attrs"
+    inputs:
+      relation_attrs: "$state.relation_attr_results"
+      context_ids: "$state.context_found_list[*].node_id"
+    outputs: "primary_from_attrs"
+
+  - step_id: "P2B_S3"
+    name: "fetch_support_subgraph_from_relation_attributes"
+    description: "Re-run bounded ID-based lookup using candidates recovered from relation attributes."
+    condition: "$state.primary_from_attrs is not None and len($state.primary_from_attrs) > 0"
+    module: "dbs.graph_search_helpers"
+    function: "find_relation_with_ids"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      primary_ids: "$state.primary_from_attrs"
+      max_depth: 2
+      time: "$input.time"
+    outputs: "subgraph"
+
+  - step_id: "P2B_S4"
+    name: "fetch_support_subgraph_by_label"
+    description: "Controlled label traversal when support target remains unresolved."
+    condition: "$state.subgraph is None and $state.primary_from_attrs is None and $state.context_found_list is not None and len($state.context_found_list) > 0"
+    module: "dbs.graph_search_helpers"
+    function: "find_relation_by_label"
+    inputs:
+      context_ids: "$state.context_found_list[*].node_id"
+      primary_label: "$input.primary_entities[0].label"
+      max_depth: 2
+      time: "$input.time"
+    outputs: "subgraph"
+
+  - step_id: "P2B_S5"
+    name: "filter_support_subgraph_by_keywords"
+    description: "Filter controlled label-traversal candidates by support keywords."
+    condition: "$state.subgraph is not None and len($input.keywords) > 0 and $state.relation_attr_results is None"
+    module: "dbs.graph_search_helpers"
+    function: "filter_subgraph_by_keywords"
+    inputs:
+      subgraph: "$state.subgraph"
+      keywords: "$state.search_queries"
+    outputs: "subgraph"
+
+  # PHASE 3 - COMPACT OUTPUT
+  - step_id: "P3_S1"
+    name: "build_support_relation_context"
+    description: "Deduplicate and compact support relation results into answer-ready JSON."
+    condition: "$state.subgraph is not None"
+    module: "dbs.graph_search_helpers"
+    function: "compact_relation_results"
+    inputs:
+      subgraph: "$state.subgraph"
+      original_query: "$input.original_query"
+      max_candidates: 10
+      max_rel_samples: 4
+    outputs: "relation_context"

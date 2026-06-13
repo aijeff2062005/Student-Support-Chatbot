@@ -1,0 +1,175 @@
+# ============================================================================
+# TEMPLATE HƯỚNG DẪN TẠO QUERY FLOW MỚI
+# ============================================================================
+# File này là template mẫu. Để tạo flow mới:
+# 1. Copy file này thành tên mới (ví dụ: why_career.yaml)
+# 2. Sửa các phần theo hướng dẫn bên dưới
+# 3. Thêm rule mới trong config/rules.yaml trỏ đến file này
+# ============================================================================
+
+# Tên flow (unique identifier)
+flow_name: "template_flow"
+
+# Mô tả ngắn gọn flow này làm gì
+description: "Mô tả flow của bạn ở đây"
+
+# ============================================================================
+# ENTITY TYPES
+# ============================================================================
+# Các loại entity mà flow này hỗ trợ
+# Hiện có trong database:
+#   - Major          : Ngành đào tạo (VD: Công nghệ thông tin, Quản trị kinh doanh)
+#   - Specialization : Chuyên ngành (VD: Kỹ thuật phần mềm, An toàn thông tin)
+#   - Faculty        : Khoa (VD: Khoa CNTT, Khoa Kinh tế)
+#   - AcademicProgram: Chương trình đào tạo
+#   - Course         : Môn học
+#   - ProgramLearningOutcome (PLO): Chuẩn đầu ra
+#   - MarketTrend    : Xu hướng thị trường
+#   - CollaborativePartner: Đối tác hợp tác
+
+supported_entity_types:
+  - Major
+  - Specialization
+
+# ============================================================================
+# TRAVERSAL STEPS - Các bước query dữ liệu
+# ============================================================================
+# Mỗi step là một Cypher query để lấy dữ liệu từ Neo4j
+# CHỈ ĐƯỢC DÙNG LỆNH ĐỌC (MATCH, RETURN) - KHÔNG ĐƯỢC CREATE/DELETE/SET
+
+traversal_steps:
+
+  # --------------------------------------------------------------------------
+  # STEP 1: Lấy thông tin entity chính
+  # --------------------------------------------------------------------------
+  - step: 1
+    name: "main_entity"                    # Tên step (dùng trong code)
+    description: "Lấy thông tin chính"     # Mô tả
+    
+    # Cypher query template
+    # Placeholders:
+    #   {entity_type} : Sẽ được thay bằng Major/Specialization/...
+    #   $entity_id    : Parameter, ID của entity
+    cypher_template: >
+      MATCH (e:{entity_type})
+      WHERE e.id = $entity_id
+      RETURN e
+    
+    # Attributes cần lấy - nếu để trống [] sẽ lấy tất cả
+    attributes:
+      - name
+      - description
+    
+    # HOẶC: Định nghĩa attributes khác nhau cho từng entity type
+    # attributes_by_type:
+    #   Major:
+    #     - name
+    #     - description
+    #     - career_opportunities
+    #   Specialization:
+    #     - name
+    #     - description
+
+  # --------------------------------------------------------------------------
+  # STEP 2: Ví dụ - Lấy relationships
+  # --------------------------------------------------------------------------
+  - step: 2
+    name: "related_data"
+    description: "Lấy dữ liệu liên quan"
+    
+    # Chỉ chạy step này cho một số entity types cụ thể
+    # Nếu không có field này, step sẽ chạy cho tất cả types
+    only_for_types:
+      - Major
+    
+    cypher_template: >
+      MATCH (e:Major)-[:INCLUDES]->(s:Specialization)
+      WHERE e.id = $entity_id
+      RETURN s
+    
+    attributes:
+      - name
+      - description
+
+  # --------------------------------------------------------------------------
+  # STEP 3: Ví dụ - Query phức tạp hơn với nhiều hops
+  # --------------------------------------------------------------------------
+  - step: 3
+    name: "deep_traversal"
+    description: "Traverse nhiều levels"
+    
+    # [:INCLUDES*1..2] nghĩa là traverse 1-2 hops theo relationship INCLUDES
+    cypher_template: >
+      MATCH (e:{entity_type})-[:INCLUDES*1..2]->(ap:AcademicProgram)
+      WHERE e.id = $entity_id
+      RETURN DISTINCT ap
+      LIMIT 5
+    
+    attributes:
+      - name
+      - total_credits
+      - training_duration
+
+# ============================================================================
+# CÁC RELATIONSHIPS TRONG DATABASE
+# ============================================================================
+# Để tham khảo khi viết Cypher queries:
+#
+# Faculty -[:TRAINS]-> Major
+# Major -[:INCLUDES]-> Specialization
+# Major/Specialization -[:INCLUDES]-> AcademicProgram
+# AcademicProgram -[:HAS_PLO]-> ProgramLearningOutcome
+# AcademicProgram -[:CONTAINS]-> Course
+# MarketTrend -[:APPLIES_TO]-> Major/Specialization
+# CollaborativePartner -[:COLLABS_WITH]-> Faculty
+#
+# ============================================================================
+
+# ============================================================================
+# CÁC ATTRIBUTES PHỔ BIẾN CỦA TỪNG NODE TYPE
+# ============================================================================
+#
+# Major / Specialization:
+#   - name, description, objective, mission
+#   - career_opportunities (array)
+#   - graduation_rate, graduate_employment_rate
+#   - key_points, status
+#
+# AcademicProgram:
+#   - name, description
+#   - total_credits, training_duration, education_level
+#   - career_opportunities, further_study_opportunities
+#   - teaching_learning_method
+#
+# ProgramLearningOutcome (PLO):
+#   - name, description, outcome, category
+#
+# MarketTrend:
+#   - name, description
+#   - demand_size, growth_rate, demand_gap
+#   - domains (array), time_period
+#
+# Faculty:
+#   - name, description, code
+#
+# CollaborativePartner:
+#   - name, description, domains (array)
+#
+# Course:
+#   - name, code, credits, description
+#
+# ============================================================================
+
+# ============================================================================
+# PROMPT TEMPLATE (Optional)
+# ============================================================================
+# Template để format context gửi cho LLM
+# Nếu không có, system sẽ dùng default format
+
+
+# Mapping entity type sang tiếng Việt (để hiển thị)
+entity_type_mapping:
+  Major: "Ngành"
+  Specialization: "Chuyên ngành"
+  Faculty: "Khoa"
+  AcademicProgram: "Chương trình đào tạo"

@@ -1,0 +1,192 @@
+version: "1.0"
+flow_name: "what_attributes"
+description: >
+  Workflow for WHAT-ATTRIBUTES / WHAT-DEFINITION queries.
+  Retrieves a concrete property value for a single resolved entity, with
+  hybrid fallback across direct node attributes, AcademicProgram attributes,
+  relation attributes, global attribute search, optional media, and crawled data.
+
+  Strategy:
+  - Phase 1: Resolve the primary entity from user input.
+  - Phase 2: Retrieve structured data in descending priority:
+    direct entity attributes → AcademicProgram fallback for Major/Specialization
+    → relation attributes → global fallback searches → optional media.
+  - Phase 3: Fall back to crawled data only when structured retrieval is empty.
+
+steps:
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 1 — PRIMARY ENTITY RESOLUTION
+  # Resolve the main entity before any attribute lookup.
+  # ════════════════════════════════════════════════════════════════
+
+  - step_id: "P1_S1"
+    name: "resolve_primary_entity"
+    description: "Resolve the primary entity to its canonical graph node."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.primary_entities[*].text"
+      entity_type: "$input.primary_entities[*].label"
+      keywords: "$input.keywords"
+      # keyword_attributes: "$input.keyword_attributes"
+      top_k: 1
+      time: "$input.time"
+    outputs: "primary_found_list"
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 2 — STRUCTURED ATTRIBUTE RETRIEVAL
+  # Prefer direct node attributes, then AcademicProgram fallback,
+  # then relation attributes, then global fallback searches.
+  # ════════════════════════════════════════════════════════════════
+
+  # ── 2.1 Resolve semantic keywords → actual attribute names ──
+  - step_id: "P2_S1"
+    name: "resolve_attribute_definitions"
+    description: "Map requested attribute keywords to canonical schema attribute names."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0"
+    module: "dbs.milvus_helper"
+    function: "search_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: "$input.primary_entities[0].label"
+      similarity_threshold: 0.65
+      top_k: 2
+    outputs: "resolved_attribute_definitions"
+
+  # ── 2.2 Search entity attributes using resolved attribute names ──
+  - step_id: "P2_S2"
+    name: "fetch_resolved_entity_attributes"
+    description: "Fetch direct node attributes using the resolved schema attribute names."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and $state.resolved_attribute_definitions and len($state.resolved_attribute_definitions) > 0"
+    module: "tools.QA.services.neo4j_service"
+    class: "Neo4jService"
+    method: "get_node_attributes_for_query_plan"
+    inputs:
+      node_ids: "$state.primary_found_list[*].node_id"
+      attribute_keys: "$state.resolved_attribute_definitions[*].attribute_name"
+      time: "$input.time"
+    outputs: "entity_attributes"
+
+  # ── 2.1.1 Major/Specialization fallback: re-resolve on AcademicProgram ──
+  - step_id: "P2_S3"
+    name: "resolve_academic_program_attribute_definitions"
+    description: "Remap attribute keywords against AcademicProgram when Major or Specialization lookup is empty."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and not $state.entity_attributes and ($state.primary_found_list[0]['node_type'] == 'Major' or $state.primary_found_list[0]['node_type'] == 'Specialization')"
+    module: "dbs.milvus_helper"
+    function: "search_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: "AcademicProgram"
+      similarity_threshold: 0.6
+      top_k: 5
+    outputs: "resolved_attribute_definitions_academic_program"
+
+  # ── 2.1.2 Find AcademicProgram node for the fallback lookup ──
+  - step_id: "P2_S4"
+    name: "resolve_academic_program_entity"
+    description: "Resolve the linked AcademicProgram node for the fallback attribute lookup."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and not $state.entity_attributes and $state.resolved_attribute_definitions_academic_program and len($state.resolved_attribute_definitions_academic_program) > 0"
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.primary_entities[*].text"
+      entity_type: ["AcademicProgram"]
+      keywords: "$input.keywords"
+      # keyword_attributes: "$input.keyword_attributes"
+      top_k: 1
+      time: "$input.time"
+    outputs: "academic_program_found_list"
+
+  # ── 2.2 Search entity attributes on AcademicProgram node ──
+  - step_id: "P2_S5"
+    name: "fetch_academic_program_attributes"
+    description: "Fetch fallback attributes from the resolved AcademicProgram node."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and not $state.entity_attributes and $state.academic_program_found_list and len($state.academic_program_found_list) > 0"
+    module: "tools.QA.services.neo4j_service"
+    class: "Neo4jService"
+    method: "get_node_attributes_for_query_plan"
+    inputs:
+      node_ids: "$state.academic_program_found_list[*].node_id"
+      attribute_keys: "$state.resolved_attribute_definitions_academic_program[*].attribute_name"
+      time: "$input.time"
+    outputs: "entity_attributes"
+
+  - step_id: "P2_S6"
+    name: "search_relation_attributes"
+    description: "Search relation-level attributes connected to the resolved primary entity."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and not $state.entity_attributes"
+    module: "dbs.milvus_helper"
+    function: "search_relation_attributes_hybrid"
+    inputs:
+      node_ids: "$state.primary_found_list[*].node_id"
+      queries: "$input.keyword_attributes"
+      top_k: 1
+      similarity_threshold: 0.7
+    outputs: "relation_attributes"
+
+  - step_id: "P2_S7"
+    name: "search_global_entity_attributes"
+    description: "Run global entity-attribute search when the primary entity cannot be resolved."
+    condition: "$state.primary_found_list is None"
+    module: "dbs.milvus_helper"
+    function: "search_entity_attributes_hybrid"
+    inputs:
+      node_ids: []
+      queries: ["$input.original_query"]
+      top_k: 3
+      similarity_threshold: 0.6
+    outputs: "entity_attributes_fallback"
+
+  - step_id: "P2_S8"
+    name: "search_global_relation_attributes"
+    description: "Run global relation-attribute search when direct entity fallback is still empty."
+    condition: "$state.primary_found_list is None and not $state.entity_attributes_fallback"
+    module: "dbs.milvus_helper"
+    function: "search_relation_attributes_hybrid"
+    inputs:
+      node_ids: []
+      queries: ["$input.original_query"]
+      top_k: 3
+      similarity_threshold: 0.6
+    outputs: "relation_attributes_fallback"
+
+  - step_id: "P2_S9"
+    name: "fetch_entity_media"
+    description: "Load media attachments for media subtopics and visual entity nodes."
+    condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and ((($input.subtopics is not None and 'media' in $input.subtopics)) or ($state.primary_found_list[0]['node_type'] in ['Campus', 'Facility', 'Activity', 'Club']))"
+    module: "tools.media_attachment_policy"
+    function: "fetch_media_for_query_plan_nodes"
+    inputs:
+      primary_found_list: "$state.primary_found_list"
+      context_found_list: []
+      primary_topic: "$input.primary_topic"
+      subtopics: "$input.subtopics"
+      sent_major_media_keys: "$input.sent_major_media_keys"
+    outputs: "media_attachments"
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 3 — CRAWLED-DATA FALLBACK
+  # Only used when structured sources and media are all empty.
+  # ════════════════════════════════════════════════════════════════
+
+#  - step_id: "P3_S1"
+#    name: "crawled_data_search"
+#    description: "Search crawled data when structured attributes and media are unavailable."
+#    condition: "not $state.entity_attributes_fallback and not $state.relation_attributes_fallback and not $state.entity_attributes and not $state.relation_attributes and not $state.fallback_major_attributes_to_academic_program and not $state.media_attachments and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+#    module: "dbs.milvus_helper"
+#    function: "search_crawled_data"
+#    inputs:
+#      question: "$input.original_query"
+#      top_k: 5
+#    outputs: "crawled_data_results"
+#
+#  - step_id: "P3_S2"
+#    name: "generate_crawled_data"
+#    description: "Generate and cache crawled data when all structured retrieval paths are empty."
+#    condition: "not $state.entity_attributes_fallback and not $state.relation_attributes_fallback and not $state.crawled_data_results and not $state.entity_attributes and not $state.relation_attributes and not $state.fallback_major_attributes_to_academic_program and not $state.media_attachments and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+#    module: "dbs.milvus_helper"
+#    function: "generate_and_save_crawled_data"
+#    inputs:
+#      question: "$input.original_query"
+#      collection_name: "knowledge_university_crawled_data"
+#    outputs: "crawled_data_results"

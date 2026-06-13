@@ -1,0 +1,840 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dmn:definitions xmlns:dmn="https://www.omg.org/spec/DMN/20240513/MODEL/" xmlns="https://example.com/dmn/level2" xmlns:feel="https://www.omg.org/spec/DMN/20240513/FEEL/" xmlns:kie="https://kie.org/dmn/extensions/1.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20230324/DMNDI/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="defs_level2_what" name="Level2_What_Explore_Compare" expressionLanguage="https://www.omg.org/spec/DMN/20240513/FEEL/" typeLanguage="https://www.omg.org/spec/DMN/20240513/FEEL/" namespace="https://example.com/dmn/level2">
+  <dmn:extensionElements />
+  <dmn:itemDefinition id="ListOfString" name="ListOfString" isCollection="true">
+    <dmn:typeRef>string</dmn:typeRef>
+  </dmn:itemDefinition>
+  <dmn:itemDefinition id="ReasoningPlan" name="ReasoningPlan" isCollection="false">
+    <dmn:itemComponent id="comp_expand_targets" name="expand_targets" isCollection="false">
+      <dmn:typeRef>ListOfString</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="comp_hop_limit" name="hop_limit" isCollection="false">
+      <dmn:typeRef>number</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="comp_alignment_key" name="alignment_key" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="comp_group_by" name="group_by" isCollection="false">
+      <dmn:typeRef>ListOfString</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="comp_aggregation_op" name="aggregation_op" isCollection="false">
+      <dmn:typeRef>ListOfString</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="comp_preferred_attribute" name="preferred_attribute" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+    </dmn:itemComponent>
+  </dmn:itemDefinition>
+  <dmn:decision id="dec_level2_plan" name="output">
+    <dmn:extensionElements />
+    <dmn:variable id="var_Level2_Plan" name="output" typeRef="ReasoningPlan" />
+    <dmn:informationRequirement id="_8F8059A3-41F7-4649-8B83-7DCFB2B578CF">
+      <dmn:requiredInput href="#in_question_word" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_3672A659-4FCD-45CF-944A-F6F5787E5BDF">
+      <dmn:requiredInput href="#in_question_intent" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_0988FFAF-1028-4817-B18D-B499A7797336">
+      <dmn:requiredInput href="#in_entity_count" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_72391B07-BFF4-41D5-9580-E6CE3307009E">
+      <dmn:requiredInput href="#in_relative_count_mentioned" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_67E7FC22-70FE-4B0B-9C1D-2EA349D677D7">
+      <dmn:requiredInput href="#in_attribute_count" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_8388E16E-38B8-4A46-9E24-82A6485F427B">
+      <dmn:requiredInput href="#in_attribute_source" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_F4A7D645-055E-4120-B28A-2804DFE132C9">
+      <dmn:requiredInput href="#in_attribute_scope" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_4DDCEE5F-6E73-4D75-B34D-78FEC4C765BD">
+      <dmn:requiredInput href="#in_has_filter" />
+    </dmn:informationRequirement>
+    <dmn:decisionTable id="dt_level2" hitPolicy="FIRST" preferredOrientation="Rule-as-Row">
+      <dmn:input id="ic_question_word">
+        <dmn:inputExpression id="_A059543B-E89A-4B5F-8F2B-1CBB30098C8E" typeRef="string">
+          <dmn:text>question_word</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_question_intent">
+        <dmn:inputExpression id="_0EF2376C-6B72-47AE-B8FB-A1A1522581C8" typeRef="string">
+          <dmn:text>question_intent</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_entity_count">
+        <dmn:inputExpression id="_85E5F7DD-64F5-41C2-8D0C-EF4AFDD7DECA" typeRef="number">
+          <dmn:text>entity_count</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_relative_count_mentioned">
+        <dmn:inputExpression id="_56F155D3-26C6-4DAF-BE96-8D4D7076E98E" typeRef="number">
+          <dmn:text>relative_count_mentioned</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_attribute_count">
+        <dmn:inputExpression id="_00C71C3E-66B8-40BB-85A2-CC275766F5FC" typeRef="number">
+          <dmn:text>attribute_count</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_attribute_source">
+        <dmn:inputExpression id="_EFDFCC3C-B41E-44B5-9CDB-9B559ADFAE9B" typeRef="string">
+          <dmn:text>attribute_source</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_attribute_scope">
+        <dmn:inputExpression id="_44BA2847-618F-4E28-95D8-67BB302FDF7C" typeRef="string">
+          <dmn:text>attribute_scope</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="ic_has_filter">
+        <dmn:inputExpression id="_701B726C-513F-46CA-A215-4AA77EBDAA02" typeRef="boolean">
+          <dmn:text>has_filter</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:output id="oc_expand_targets" name="expand_targets" typeRef="ListOfString" />
+      <dmn:output id="oc_hop_limit" name="hop_limit" typeRef="number" />
+      <dmn:output id="oc_alignment_key" name="alignment_key" typeRef="string" />
+      <dmn:output id="oc_group_by" name="group_by" typeRef="ListOfString" />
+      <dmn:output id="oc_aggregation_op" name="aggregation_op" typeRef="ListOfString" />
+      <dmn:output id="oc_preferred_attribute" name="preferred_attribute" typeRef="string" />
+      <dmn:annotation name="description" />
+      <dmn:rule id="rule_1">
+        <dmn:inputEntry id="ie_1_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_question_intent">
+          <dmn:text>&quot;explore&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_entity_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_attribute_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_1_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_1_expand_targets">
+          <dmn:text>[&quot;self_children&quot;, &quot;self_parent&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_1_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_1_alignment_key">
+          <dmn:text>&quot;none&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_1_group_by">
+          <dmn:text>[&quot;node_type&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_1_aggregation_op">
+          <dmn:text>[&quot;distribution&quot;, &quot;count&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_1_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu user chỉ hỏi &quot;what&quot; về 1 entity mà không nêu thuộc tính: L2 nên mở rộng xuống child để phân rã + thêm parent để đặt ngữ cảnh.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_2">
+        <dmn:inputEntry id="ie_2_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_question_intent">
+          <dmn:text>&quot;explore&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_entity_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_attribute_count">
+          <dmn:text>&gt;=1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_attribute_source">
+          <dmn:text>&quot;user&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_2_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_2_expand_targets">
+          <dmn:text>[&quot;self_parent_siblings&quot;, &quot;self_attributes&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_2_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_2_alignment_key">
+          <dmn:text>&quot;same_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_2_group_by">
+          <dmn:text>[&quot;attribute&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_2_aggregation_op">
+          <dmn:text>[&quot;distribution&quot;, &quot;rank&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_2_preferred_attribute">
+          <dmn:text>&quot;user_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu user hỏi 1+ thuộc tính của entity: L2 nên lấy sibling cùng cấp để tạo baseline (cùng type/parent) và ưu tiên cùng attribute.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_3">
+        <dmn:inputEntry id="ie_3_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_question_intent">
+          <dmn:text>&quot;explore&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_entity_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_relative_count_mentioned">
+          <dmn:text>&gt;=1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_attribute_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_attribute_scope">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_3_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_3_expand_targets">
+          <dmn:text>[&quot;relation_self_relative&quot;, &quot;relative_children&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_3_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_3_alignment_key">
+          <dmn:text>&quot;none&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_3_group_by">
+          <dmn:text>[&quot;relation_type&quot;, &quot;node_type&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_3_aggregation_op">
+          <dmn:text>[&quot;list&quot;, &quot;distribution&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_3_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu có entity liên quan do user nhắc: L2 nên giải thích quan hệ giữa self và relative + mở rộng 1 lớp child của relative để làm rõ.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_4">
+        <dmn:inputEntry id="ie_4_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_question_intent">
+          <dmn:text>&quot;explore&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_entity_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_relative_count_mentioned">
+          <dmn:text>&gt;=1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_attribute_count">
+          <dmn:text>&gt;=1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_attribute_source">
+          <dmn:text>&quot;user&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_attribute_scope">
+          <dmn:text>&quot;relative&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_4_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_4_expand_targets">
+          <dmn:text>[&quot;relative_children&quot;, &quot;relation_self_relative&quot;, &quot;uses_attribute_filter&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_4_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_4_alignment_key">
+          <dmn:text>&quot;same_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_4_group_by">
+          <dmn:text>[&quot;attribute&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_4_aggregation_op">
+          <dmn:text>[&quot;list&quot;, &quot;distribution&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_4_preferred_attribute">
+          <dmn:text>&quot;user_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu user hỏi thuộc tính nhưng phạm vi nằm ở relative (ví dụ &quot;khoa X có những ngành nào học phí &lt; Y&quot;): L2 lấy child của relative và lọc theo attribute.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_5">
+        <dmn:inputEntry id="ie_5_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_question_intent">
+          <dmn:text>&quot;explore&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_entity_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_attribute_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_5_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_5_expand_targets">
+          <dmn:text>[&quot;resolve_entity_from_context&quot;, &quot;self_children&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_5_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_5_alignment_key">
+          <dmn:text>&quot;none&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_5_group_by">
+          <dmn:text>[&quot;node_type&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_5_aggregation_op">
+          <dmn:text>[&quot;distribution&quot;, &quot;count&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_5_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu thiếu entity (entity_count=0): ưu tiên resolve từ session/context. Nếu resolve thất bại thì cần hỏi lại user (fallback ngoài DMN).</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_6">
+        <dmn:inputEntry id="ie_6_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_question_intent">
+          <dmn:text>&quot;explore&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_entity_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_attribute_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_6_has_filter">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_6_expand_targets">
+          <dmn:text>[&quot;self_children&quot;, &quot;self_parent&quot;, &quot;uses_filter&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_6_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_6_alignment_key">
+          <dmn:text>&quot;none&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_6_group_by">
+          <dmn:text>[&quot;node_type&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_6_aggregation_op">
+          <dmn:text>[&quot;distribution&quot;, &quot;count&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_6_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu có filter (thời gian/cơ sở/kỳ tuyển sinh): luôn áp filter khi mở rộng L2.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_7">
+        <dmn:inputEntry id="ie_7_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_question_intent">
+          <dmn:text>&quot;compare&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_entity_count">
+          <dmn:text>&gt;1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_attribute_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_7_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_7_expand_targets">
+          <dmn:text>[&quot;self_attributes&quot;, &quot;infer_alignment_peers&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_7_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_7_alignment_key">
+          <dmn:text>&quot;same_parent&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_7_group_by">
+          <dmn:text>[&quot;attribute&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_7_aggregation_op">
+          <dmn:text>[&quot;kv_table&quot;, &quot;rank&quot;, &quot;distribution&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_7_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Compare không có attribute: L2 phải chọn alignment_key (ưu tiên cùng parent/type). Sau đó lấy 1 tập thuộc tính chuẩn để đối chiếu.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_8">
+        <dmn:inputEntry id="ie_8_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_question_intent">
+          <dmn:text>&quot;compare&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_entity_count">
+          <dmn:text>&gt;1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_attribute_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_attribute_source">
+          <dmn:text>&quot;user&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_8_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_8_expand_targets">
+          <dmn:text>[&quot;self_attribute_user_attribute_each&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_8_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_8_alignment_key">
+          <dmn:text>&quot;same_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_8_group_by">
+          <dmn:text>[&quot;none&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_8_aggregation_op">
+          <dmn:text>[&quot;minmax&quot;, &quot;rank&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_8_preferred_attribute">
+          <dmn:text>&quot;user_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Compare có 1 attribute user nêu rõ: chỉ cần lấy đúng attribute đó cho từng entity + normalize unit/định dạng.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_9">
+        <dmn:inputEntry id="ie_9_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_question_intent">
+          <dmn:text>&quot;compare&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_entity_count">
+          <dmn:text>&gt;1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_attribute_count">
+          <dmn:text>&gt;1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_attribute_source">
+          <dmn:text>&quot;user&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_9_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_9_expand_targets">
+          <dmn:text>[&quot;self_attribute_list_user_attributes_each&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_9_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_9_alignment_key">
+          <dmn:text>&quot;same_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_9_group_by">
+          <dmn:text>[&quot;attribute&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_9_aggregation_op">
+          <dmn:text>[&quot;kv_table&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_9_preferred_attribute">
+          <dmn:text>&quot;user_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Compare nhiều attribute: L2 nên trả bảng key-value (mỗi dòng 1 attribute), kèm chuẩn hoá đơn vị và ghi chú khác biệt.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_10">
+        <dmn:inputEntry id="ie_10_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_question_intent">
+          <dmn:text>&quot;compare&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_entity_count">
+          <dmn:text>&gt;1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_relative_count_mentioned">
+          <dmn:text>&gt;=1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_attribute_count">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_attribute_scope">
+          <dmn:text>&quot;both&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_10_has_filter">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_10_expand_targets">
+          <dmn:text>[&quot;apply_relative_scope_filter&quot;, &quot;self_attributes&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_10_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_10_alignment_key">
+          <dmn:text>&quot;same_relation_type&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_10_group_by">
+          <dmn:text>[&quot;attribute&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_10_aggregation_op">
+          <dmn:text>[&quot;kv_table&quot;, &quot;rank&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_10_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Nếu compare bị ràng buộc bởi relative user nêu (ví dụ cùng 1 khoa/cơ sở): dùng relative làm scope filter trước khi align.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_11">
+        <dmn:inputEntry id="ie_11_question_word">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_question_intent">
+          <dmn:text>&quot;compare&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_entity_count">
+          <dmn:text>&gt;1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_relative_count_mentioned">
+          <dmn:text>0</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_attribute_count">
+          <dmn:text>1</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_attribute_source">
+          <dmn:text>&quot;user&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_attribute_scope">
+          <dmn:text>&quot;self&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_11_has_filter">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_11_expand_targets">
+          <dmn:text>[&quot;self_attribute_user_attribute_each&quot;, &quot;uses_filter&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_11_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_11_alignment_key">
+          <dmn:text>&quot;same_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_11_group_by">
+          <dmn:text>[&quot;none&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_11_aggregation_op">
+          <dmn:text>[&quot;rank&quot;, &quot;minmax&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_11_preferred_attribute">
+          <dmn:text>&quot;user_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Compare có filter (năm/kỳ/cơ sở): áp filter cho cả 2 entity trước khi so sánh.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_default">
+        <dmn:inputEntry id="ie_default_question_word">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_question_intent">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_entity_count">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_relative_count_mentioned">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_attribute_count">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_attribute_source">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_attribute_scope">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="ie_default_has_filter">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="oe_default_expand_targets">
+          <dmn:text>[&quot;self_children&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_default_hop_limit">
+          <dmn:text>1</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_default_alignment_key">
+          <dmn:text>&quot;none&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_default_group_by">
+          <dmn:text>[&quot;none&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_default_aggregation_op">
+          <dmn:text>[&quot;list&quot;]</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="oe_default_preferred_attribute">
+          <dmn:text>&quot;inferred_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Default fallback rule - returns basic children exploration.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+    </dmn:decisionTable>
+  </dmn:decision>
+  <dmn:inputData id="in_question_word" name="question_word">
+    <dmn:extensionElements />
+    <dmn:variable id="var_question_word" name="question_word" typeRef="string" />
+  </dmn:inputData>
+  <dmn:inputData id="in_question_intent" name="question_intent">
+    <dmn:extensionElements />
+    <dmn:variable id="var_question_intent" name="question_intent" typeRef="string" />
+  </dmn:inputData>
+  <dmn:inputData id="in_entity_count" name="entity_count">
+    <dmn:extensionElements />
+    <dmn:variable id="var_entity_count" name="entity_count" typeRef="number" />
+  </dmn:inputData>
+  <dmn:inputData id="in_relative_count_mentioned" name="relative_count_mentioned">
+    <dmn:extensionElements />
+    <dmn:variable id="var_relative_count_mentioned" name="relative_count_mentioned" typeRef="number" />
+  </dmn:inputData>
+  <dmn:inputData id="in_attribute_count" name="attribute_count">
+    <dmn:extensionElements />
+    <dmn:variable id="var_attribute_count" name="attribute_count" typeRef="number" />
+  </dmn:inputData>
+  <dmn:inputData id="in_attribute_source" name="attribute_source">
+    <dmn:extensionElements />
+    <dmn:variable id="var_attribute_source" name="attribute_source" typeRef="string" />
+  </dmn:inputData>
+  <dmn:inputData id="in_attribute_scope" name="attribute_scope">
+    <dmn:extensionElements />
+    <dmn:variable id="var_attribute_scope" name="attribute_scope" typeRef="string" />
+  </dmn:inputData>
+  <dmn:inputData id="in_has_filter" name="has_filter">
+    <dmn:extensionElements />
+    <dmn:variable id="var_has_filter" name="has_filter" typeRef="boolean" />
+  </dmn:inputData>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="_771AB460-EA4A-448A-822F-B7BAB9530F1F" name="DRG">
+      <di:extension>
+        <kie:ComponentsWidthsExtension>
+          <kie:ComponentWidths dmnElementRef="dt_level2">
+            <kie:width>50</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>124</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>164</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>850</kie:width>
+          </kie:ComponentWidths>
+        </kie:ComponentsWidthsExtension>
+      </di:extension>
+      <dmndi:DMNShape id="dmnshape-drg-in_question_word" dmnElementRef="in_question_word" isCollapsed="false">
+        <dmndi:DMNStyle id="_CE566265-D615-4577-B0EC-5FD494714B23">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="50" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_66E606B5-5CCD-4CF6-A029-820251F91C12" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_question_intent" dmnElementRef="in_question_intent" isCollapsed="false">
+        <dmndi:DMNStyle id="_EAA120A1-556C-430F-BFCC-3D26F7F7B378">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="225" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_5805387A-8E49-44AB-BBC4-5A66FBDC02E4" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_entity_count" dmnElementRef="in_entity_count" isCollapsed="false">
+        <dmndi:DMNStyle id="_D0BF7B01-5D0F-44F6-A3C0-B957A72A7044">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="400" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_23E73957-FA56-4E0E-AD24-F1CD15C1D13B" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_relative_count_mentioned" dmnElementRef="in_relative_count_mentioned" isCollapsed="false">
+        <dmndi:DMNStyle id="_D85BEC5C-32AF-417B-A280-978908EF85BB">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="575" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_8B1CBC27-A6DB-4802-A5B2-A9E26BF783CF" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_attribute_count" dmnElementRef="in_attribute_count" isCollapsed="false">
+        <dmndi:DMNStyle id="_92A18FA1-78A4-4A05-8150-6E8BBCA2B36B">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="750" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_1248F79A-B563-4D03-B614-19A7D84B945E" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_attribute_source" dmnElementRef="in_attribute_source" isCollapsed="false">
+        <dmndi:DMNStyle id="_C756B127-1289-4E3D-889C-A7DB8179DF1E">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="925" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_DF17BD76-7BCC-42E6-BC83-E44E44F0E305" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_attribute_scope" dmnElementRef="in_attribute_scope" isCollapsed="false">
+        <dmndi:DMNStyle id="_10E0470D-D1AD-48EB-8236-2056F5382364">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="1100" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_55A405FB-F82F-4D46-BB02-18DD5BC411AC" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_has_filter" dmnElementRef="in_has_filter" isCollapsed="false">
+        <dmndi:DMNStyle id="_03E85FE3-E738-474B-AEA2-C9030DC0CC68">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="1275" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_0196FD80-89B0-4F37-9B27-7212D2EA9E6B" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-dec_level2_plan" dmnElementRef="dec_level2_plan" isCollapsed="false">
+        <dmndi:DMNStyle id="_222D4D9F-3094-476C-8B0D-58CD66C945FE">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="663" y="50" width="100" height="50" />
+        <dmndi:DMNLabel id="_1EAAC7C1-D95E-4869-B8ED-3AC945E22C2E" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="dmnedge-drg-_8F8059A3-41F7-4649-8B83-7DCFB2B578CF" dmnElementRef="_8F8059A3-41F7-4649-8B83-7DCFB2B578CF">
+        <di:waypoint x="100" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_3672A659-4FCD-45CF-944A-F6F5787E5BDF" dmnElementRef="_3672A659-4FCD-45CF-944A-F6F5787E5BDF">
+        <di:waypoint x="275" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_0988FFAF-1028-4817-B18D-B499A7797336" dmnElementRef="_0988FFAF-1028-4817-B18D-B499A7797336">
+        <di:waypoint x="450" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_72391B07-BFF4-41D5-9580-E6CE3307009E" dmnElementRef="_72391B07-BFF4-41D5-9580-E6CE3307009E">
+        <di:waypoint x="625" y="250" />
+        <di:waypoint x="650" y="204" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_67E7FC22-70FE-4B0B-9C1D-2EA349D677D7" dmnElementRef="_67E7FC22-70FE-4B0B-9C1D-2EA349D677D7">
+        <di:waypoint x="800" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_8388E16E-38B8-4A46-9E24-82A6485F427B" dmnElementRef="_8388E16E-38B8-4A46-9E24-82A6485F427B">
+        <di:waypoint x="975" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_F4A7D645-055E-4120-B28A-2804DFE132C9" dmnElementRef="_F4A7D645-055E-4120-B28A-2804DFE132C9">
+        <di:waypoint x="1150" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_4DDCEE5F-6E73-4D75-B34D-78FEC4C765BD" dmnElementRef="_4DDCEE5F-6E73-4D75-B34D-78FEC4C765BD">
+        <di:waypoint x="1325" y="250" />
+        <di:waypoint x="713" y="75" />
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</dmn:definitions>

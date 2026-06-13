@@ -1,0 +1,164 @@
+# Flow cho câu hỏi: Tại sao nên học ngành/chuyên ngành X?
+flow_name: "why_explain_major"
+description: "Query flow để trả lời câu hỏi tại sao nên học một ngành/chuyên ngành cụ thể"
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - Major
+  - Specialization
+
+# Các bước traverse graph - CHỈ ĐỌC DỮ LIỆU
+traversal_steps:
+  # Step 1: Lấy thông tin chính của Major/Specialization
+  - step: 1
+    name: "main_entity"
+    description: "Lấy thông tin chính của ngành/chuyên ngành"
+    
+    # Cypher template - dùng WHERE clause thay vì inline property
+    cypher_template: >
+      MATCH (e:{entity_type})
+      WHERE e.id = $entity_id
+      RETURN e
+    
+    # Attributes cần lấy cho từng loại entity
+    attributes_by_type:
+      Major:
+        - name
+        - description
+        - objective
+        - mission
+        - key_points
+        - career_opportunities
+        - graduation_rate
+        - graduate_employment_rate
+
+      Specialization:
+        - name
+        - description
+        - objective
+        - mission
+        - key_points
+        - career_opportunities
+
+
+  # Step 2: Lấy chuyên ngành thuộc ngành (nếu có)
+  - step: 2
+    name: "specializations"
+    description: "Lấy danh sách chuyên ngành thuộc ngành"
+    
+    only_for_types:
+      - Major
+    
+    cypher_template: >
+      MATCH (e:Major)-[:INCLUDES]->(s:Specialization)
+      WHERE e.id = $entity_id
+      RETURN s
+    
+    attributes:
+      - name
+      - description
+      - objective
+      - career_opportunities
+      - key_points
+
+  # Step 3: Lấy thông tin chương trình đào tạo
+  - step: 3
+    name: "academic_programs"
+    description: "Lấy danh sách chương trình đào tạo thuộc ngành/chuyên ngành"
+    
+    cypher_template: >
+      MATCH (e:{entity_type})-[:INCLUDES*1..2]->(ap:AcademicProgram)
+      WHERE e.id = $entity_id
+      RETURN DISTINCT ap
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+      - career_opportunities
+      - further_study_opportunities
+      - total_credits
+      - training_duration
+      - education_level
+      - teaching_learning_method
+
+  # Step 4: Lấy chuẩn đầu ra (PLO)
+  - step: 4
+    name: "learning_outcomes"
+    description: "Lấy chuẩn đầu ra của chương trình"
+    
+    cypher_template: >
+      MATCH (e:{entity_type})-[:INCLUDES*1..2]->(ap:AcademicProgram)-[:HAS_PLO]->(plo:ProgramLearningOutcome)
+      WHERE e.id = $entity_id
+      RETURN DISTINCT plo
+      LIMIT 15
+    
+    attributes:
+      - name
+      - description
+      - outcome
+      - category
+
+  # Step 5: Lấy xu hướng thị trường
+  - step: 5
+    name: "market_trends"
+    description: "Lấy xu hướng thị trường liên quan"
+    
+    cypher_template: >
+      MATCH (mt:MarketTrend)-[:APPLIES_TO]->(e:{entity_type})
+      WHERE e.id = $entity_id
+      RETURN mt
+    
+    attributes:
+      - name
+      - description
+      - demand_size
+      - growth_rate
+      - demand_gap
+      - domains
+      - time_period
+
+  # Step 6: Lấy thông tin Khoa đào tạo
+  - step: 6
+    name: "faculty_info"
+    description: "Lấy thông tin khoa đào tạo ngành này"
+    
+    # Chỉ áp dụng cho Major
+    only_for_types:
+      - Major
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)
+      WHERE m.id = $entity_id
+      RETURN f
+    
+    attributes:
+      - name
+      - description
+      - code
+
+  # Step 7: Lấy đối tác hợp tác của Khoa
+  - step: 7
+    name: "partners"
+    description: "Lấy đối tác hợp tác"
+    
+    only_for_types:
+      - Major
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)
+      WHERE m.id = $entity_id
+      MATCH (cp:CollaborativePartner)-[:COLLABS_WITH]->(f)
+      RETURN cp
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+      - domains
+
+# Mapping entity_type sang tiếng Việt
+entity_type_mapping:
+  Major: "Ngành"
+  Specialization: "Chuyên ngành"
+

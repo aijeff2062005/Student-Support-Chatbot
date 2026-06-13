@@ -1,0 +1,43 @@
+version: "1.0"
+flow_name: "how_facilities"
+description: >
+  Workflow for HOW-FACILITIES questions about how to use facilities,
+  understand usage context, and find supporting managers.
+
+  Strategy:
+  - Phase 1: Retrieve facility usage profile and location.
+  - Phase 2: Retrieve management/support ownership.
+
+  Fallback policy:
+  - Provide available facility facts first; if manager info is missing,
+    keep guidance usage-centric without inventing ownership details.
+
+supported_entity_types:
+  - Facility
+
+requires_entity_id: false
+
+traversal_steps:
+  # PHASE 1 — FACILITY USAGE PROFILE
+  - step: 1
+    name: "facility_usage"
+    description: "Fetch facility profile, usage notes, and address."
+    cypher_template: >
+      MATCH (f:Facility)
+      RETURN f.name, f.description, f.extra_data, f.address
+    attributes:
+      - name
+      - description
+      - extra_data
+      - address
+
+  # PHASE 2 — MANAGEMENT SUPPORT
+  - step: 2
+    name: "managed_facilities"
+    description: "Fetch manager/facility ownership mapping for support routing."
+    cypher_template: >
+      MATCH (manager)-[:MANAGES]->(f:Facility)
+      RETURN manager.name AS manager_name, f.name AS facility_name
+    attributes:
+      - manager_name
+      - facility_name

@@ -1,0 +1,89 @@
+services:
+  # Kogito DMN Chatbot Service
+  kogito-chatbot:
+    build:
+      context: edu_rule
+      dockerfile: Dockerfile
+    container_name: kogito-chatbot-dmn
+    ports:
+      - "${KOGITO_PORT:-8080}:8080"
+    environment:
+      - KOGITO_SERVICE_URL=${KOGITO_SERVICE_URL:-http://kogito-chatbot:8080}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/q/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - kogito-network
+
+  # Redis Cache (Local) — LLM response caching
+  redis:
+    image: redis:7-alpine
+    container_name: admission-agent-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --maxmemory ${REDIS_MAXMEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - kogito-network
+
+  mcp_server:
+    build:
+      dockerfile: Dockerfile
+    container_name: mcp_server
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - kogito-network
+    command: ["uv", "run", "python", "-m", "tools.QA.mcp_server"]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: admission-agent-postgres
+    environment:
+      - POSTGRES_USER=adk
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=admission_chatbot_migrate
+    ports:
+      - "17001:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adk -d admission_chatbot_migrate"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - kogito-network
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  kogito-network:
+    driver: bridge

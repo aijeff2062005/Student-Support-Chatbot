@@ -1,0 +1,52 @@
+version: "1.0"
+flow_name: "how_fee"
+description: >
+  Workflow for HOW-FEE questions about tuition policy, scholarship policy,
+  and admission fee-related guidance.
+
+  Strategy:
+  - Phase 1: Retrieve tuition policy baseline.
+  - Phase 2: Retrieve scholarship policy options.
+  - Phase 3: Retrieve admission fee detail references.
+
+  Fallback policy:
+  - Use official policy fields first; if one policy block is missing,
+    answer from the remaining policy blocks without speculation.
+
+supported_entity_types: ["University"]
+requires_entity_id: false
+
+traversal_steps:
+  # PHASE 1 — TUITION POLICY BASELINE
+  - step: 1
+    name: "tuition_policy"
+    description: "Fetch tuition policy records (type='TuitionFee')."
+    cypher_template: >
+      MATCH (p:Policy {type: 'TuitionFee'})
+      RETURN p.name, p.description, p.effective_from
+    attributes:
+      - name
+      - description
+      - effective_from
+
+  # PHASE 2 — SCHOLARSHIP POLICY OPTIONS
+  - step: 2
+    name: "scholarship_policy"
+    description: "Fetch scholarship policy records (type='Scholarship')."
+    cypher_template: >
+      MATCH (s:Policy {type: 'Scholarship'})
+      RETURN s.name, s.description, s.effective_from
+    attributes:
+      - name
+      - description
+      - effective_from
+
+  # PHASE 3 — ADMISSION FEE REFERENCES
+  - step: 3
+    name: "admission_fee_info"
+    description: "Fetch fee information from admission policy where available."
+    cypher_template: >
+      MATCH (a:AdmissionPolicy)
+      RETURN a.fee_information
+    attributes:
+      - fee_information

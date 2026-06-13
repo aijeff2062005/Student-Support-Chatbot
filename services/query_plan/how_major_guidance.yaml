@@ -1,0 +1,115 @@
+version: "1.0"
+flow_name: "how_major_guidance"
+description: >
+  Workflow for HOW-MAJOR-GUIDANCE questions about major fit, training direction,
+  and career outlook.
+
+  Strategy:
+  - Phase 1: Retrieve major baseline, market context, and training outcomes.
+  - Phase 2: Retrieve career direction and required skills.
+  - Phase 3: Retrieve social-proof signals when available.
+
+  Fallback policy:
+  - Prioritize direct major/program evidence.
+  - If trend/story blocks are missing, answer from curriculum and career facts only.
+
+supported_entity_types:
+  - Major
+  - Specialization
+
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 — MAJOR BASELINE & TRAINING CONTEXT
+  - step: 1
+    name: "major_info"
+    description: "Fetch major baseline including mission, objective, and career opportunities."
+    cypher_template: >
+      MATCH (m)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN m.name, m.mission, m.career_opportunities, m.objective
+    attributes:
+      - name
+      - mission
+      - career_opportunities
+      - objective
+
+  - step: 2
+    name: "market_trends"
+    description: "Fetch market trend signals related to the major when available."
+    cypher_template: >
+      MATCH (m)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      OPTIONAL MATCH (t:MarketTrend)-[:APPLIES_TO]->(m)
+      RETURN t.name, t.description, t.demand_size
+    attributes:
+      - name
+      - description
+      - demand_size
+
+  - step: 3
+    name: "program_learning_outcomes"
+    description: "Fetch program learning outcomes associated with the major."
+    cypher_template: >
+      MATCH (m)-[:INCLUDES]->(ap:AcademicProgram)-[:HAS_PLO]->(plo:ProgramLearningOutcome)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN plo.description, plo.outcome, plo.risk
+    attributes:
+      - description
+      - outcome
+      - risk
+
+  - step: 4
+    name: "education_system_duration"
+    description: "Fetch training duration, total credits, and education level."
+    cypher_template: >
+      MATCH (m)-[:INCLUDES]->(ap:AcademicProgram)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN ap.training_duration, ap.total_credits, ap.education_level
+    attributes:
+      - training_duration
+      - total_credits
+      - education_level
+
+  # PHASE 2 — CAREER PATH & SKILL REQUIREMENTS
+  - step: 5
+    name: "career_positions"
+    description: "Fetch career positions mapped from the major."
+    cypher_template: >
+      MATCH (m)-[:LEADS_TO]->(cp:CareerPosition)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN cp.name, cp.seniority_level, cp.required_experience_years,
+             cp.potential_salary_min, cp.working_environment
+    attributes:
+      - name
+      - seniority_level
+      - required_experience_years
+      - potential_salary_min
+      - working_environment
+
+  - step: 6
+    name: "required_skills"
+    description: "Fetch skills required by related career positions."
+    cypher_template: >
+      MATCH (m)-[:LEADS_TO]->(cp:CareerPosition)-[:REQUIRES]->(s:Skill)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN DISTINCT s.name, s.skill_domains, s.related_tools, s.related_certifications
+    attributes:
+      - name
+      - skill_domains
+      - related_tools
+      - related_certifications
+
+  # PHASE 3 — TALENTED-STORY ENRICHMENT (OPTIONAL)
+  - step: 7
+    name: "talented_stories"
+    description: "Fetch notable student stories linked to the major when available."
+    cypher_template: >
+      MATCH (m)<-[:STUDIED_AT]-(ts:TalentedStudent)
+      WHERE m.id = $entity_id AND (m:Major OR m:Specialization)
+      RETURN ts.name, ts.description, ts.achievements, ts.academic_cohort
+    attributes:
+      - name
+      - description
+      - achievements
+      - academic_cohort

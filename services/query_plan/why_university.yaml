@@ -1,0 +1,201 @@
+# Flow cho câu hỏi: Vì sao nên chọn GDU?
+flow_name: "why_university"
+description: "Query flow để trả lời câu hỏi tại sao nên chọn học tại trường"
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - University
+
+# Đặc biệt: Flow này KHÔNG cần entity_id vì chỉ có 1 University
+requires_entity_id: false
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Thông tin trường
+  - step: 1
+    name: "university_info"
+    description: "Lấy thông tin chính của trường"
+    
+    cypher_template: >
+      MATCH (u:University)
+      RETURN u
+    
+    attributes:
+      - name
+      - abbreviation
+      - description
+      - slogan
+      - established_year
+      - type
+      - address
+      - facilities_around
+
+  # Step 2: Các khoa
+  - step: 2
+    name: "faculties"
+    description: "Lấy danh sách các khoa"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(f:Faculty)
+      RETURN f
+    
+    attributes:
+      - name
+      - description
+
+
+  # Step 3: Các cơ sở
+  - step: 3
+    name: "campuses"
+    description: "Lấy danh sách các cơ sở/campus"
+    
+    cypher_template: >
+      MATCH (u:University)-[:HAS_CAMPUS]->(c:Campus)
+      RETURN c
+      LIMIT 5
+    
+    attributes:
+      - name
+      - address
+
+  # Step 4: Cơ sở vật chất
+  - step: 4
+    name: "facilities"
+    description: "Lấy danh sách cơ sở vật chất"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(d)-[:MANAGES]->(f:Facility)
+      RETURN DISTINCT f
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+
+  # Step 5: Câu lạc bộ
+  - step: 5
+    name: "clubs"
+    description: "Lấy danh sách CLB"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(f:Faculty)-[:MANAGES]->(c:Club)
+      RETURN DISTINCT c 
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+
+  # Step 6: Đối tác
+  - step: 6
+    name: "partners"
+    description: "Lấy danh sách đối tác hợp tác"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(f:Faculty)<-[:COLLABS_WITH]-(p:CollaborativePartner)
+      RETURN DISTINCT p
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+      - domains
+
+  # Step 7: Lãnh đạo
+  - step: 7
+    name: "leadership"
+    description: "Lấy thông tin lãnh đạo trường"
+    
+    cypher_template: >
+      MATCH (p:Person)-[r:WORKS_IN]->(u:University)
+      RETURN p, r.role as role
+    
+    attributes:
+      - name
+      - degree
+      - academic_rank
+      - bio
+      - role
+
+  # Step 8: Tổng quan các ngành (với tỷ lệ việc làm)
+  - step: 8
+    name: "majors_overview"
+    description: "Lấy tổng quan các ngành đào tạo"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(f:Faculty)-[:TRAINS]->(m:Major)
+      RETURN m.name as name, m.graduate_employment_rate as graduate_employment_rate, m.key_points as key_points
+      LIMIT 7
+
+    attributes:
+      - name
+      - graduate_employment_rate
+      - key_points
+
+  # Step 9: Dịch vụ hỗ trợ sinh viên
+  - step: 9
+    name: "services"
+    description: "Lấy danh sách dịch vụ hỗ trợ"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(d)-[:MANAGES]->(s:Service)
+      RETURN DISTINCT s
+      LIMIT 5
+    
+    attributes:
+      - name
+
+  # Step 10: Hoạt động
+  - step: 10
+    name: "activities"
+    description: "Lấy các hoạt động của trường"
+    
+    cypher_template: >
+      MATCH (u:University)-[:MANAGES]->(f:Faculty)-[:MANAGES]->(c:Club)
+      MATCH (a:Activity)-[:ORGANIZED_BY]->(c)
+      RETURN DISTINCT a
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+      - start_date
+      - end_date
+
+  # Step 11: Chính sách học phí
+  - step: 11
+    name: "tuition_policies"
+    description: "Lấy thông tin chính sách học phí"
+    
+    cypher_template: >
+      MATCH (p:Policy)
+      WHERE (p.type = 'TuitionFee' OR p.name CONTAINS 'học phí' OR p.name CONTAINS 'Học phí')
+        AND {temporal_filter:p}
+      RETURN p
+
+    attributes:
+      - name
+      - description
+      - outcome
+      - effective_from
+
+  # Step 12: Chính sách học bổng
+  - step: 12
+    name: "scholarship_policies"
+    description: "Lấy thông tin chính sách học bổng"
+
+    cypher_template: >
+      MATCH (p:Policy)
+      WHERE (p.type = 'Scholarship' OR p.name CONTAINS 'học bổng' OR p.name CONTAINS 'Học bổng')
+        AND {temporal_filter:p}
+      RETURN p
+    
+    attributes:
+      - name
+      - description
+      - outcome
+      - effective_from
+
+# Mapping cho entity_type
+entity_type_mapping:
+  University: "Trường"

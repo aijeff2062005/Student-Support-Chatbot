@@ -1,0 +1,2496 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dmn:definitions xmlns:dmn="https://www.omg.org/spec/DMN/20240513/MODEL/" xmlns="https://example.com/dmn/gdu/router/v1" xmlns:dmndi="https://www.omg.org/spec/DMN/20230324/DMNDI/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:feel="https://www.omg.org/spec/DMN/20240513/FEEL/" xmlns:kie="https://kie.org/dmn/extensions/1.0" id="def_router_v1" name="question_query_plan" typeLanguage="https://www.omg.org/spec/DMN/20240513/FEEL/" namespace="https://example.com/dmn/gdu/router/v1">
+  <dmn:extensionElements />
+  <dmn:itemDefinition id="t_qtype" name="t_qtype" isCollection="false">
+    <dmn:typeRef>string</dmn:typeRef>
+  </dmn:itemDefinition>
+  <dmn:itemDefinition id="t_intent" name="t_intent" isCollection="false">
+    <dmn:typeRef>string</dmn:typeRef>
+  </dmn:itemDefinition>
+  <dmn:itemDefinition id="t_topic" name="t_topic" isCollection="false">
+    <dmn:typeRef>string</dmn:typeRef>
+  </dmn:itemDefinition>
+  <dmn:itemDefinition id="t_bool" name="t_bool" isCollection="false">
+    <dmn:typeRef>boolean</dmn:typeRef>
+  </dmn:itemDefinition>
+  <dmn:decision id="dec_route_macro" name="output">
+    <dmn:extensionElements />
+    <dmn:variable id="out_macro_family" name="output" typeRef="string" />
+    <dmn:informationRequirement id="_68E02F40-BDF3-4DCC-96DE-0BD87332E035">
+      <dmn:requiredInput href="#in_qtype" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_8133E265-9888-40C9-B80A-FDEED05A46DC">
+      <dmn:requiredInput href="#in_intent" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_82ABE1C3-80FE-4F44-90DB-0EBF3887178C">
+      <dmn:requiredInput href="#in_topic" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_A9DB3C94-4D1A-4BF0-A48A-6C3B13783FF3">
+      <dmn:requiredInput href="#in_compare_mode" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_7B834509-FC95-42ED-87E8-282CA64D466D">
+      <dmn:requiredInput href="#in_need_disambig" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_5D961266-DD31-40C1-8BD2-8825BD23C0F5">
+      <dmn:requiredInput href="#_008D02EF-8A14-4B9A-A0B3-19D5E558478E" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_08300F2F-A78D-45EF-9E98-FFB1FF631276">
+      <dmn:requiredInput href="#_163E58A4-7EFD-4FFE-9085-73254FD6929A" />
+    </dmn:informationRequirement>
+    <dmn:informationRequirement id="_A42D2A79-AEE0-43D6-8643-F014CBE8A0EB">
+      <dmn:requiredInput href="#_4029950B-1A26-42C6-B0C3-3DA770206261" />
+    </dmn:informationRequirement>
+    <dmn:decisionTable id="dt_route_macro" typeRef="string" hitPolicy="FIRST" preferredOrientation="Rule-as-Row" label="output">
+      <dmn:input id="dt_in_qtype">
+        <dmn:inputExpression typeRef="string" id="_E0673650-6769-4F22-82FD-FDD80423CF0E">
+          <dmn:text>qtype</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="dt_in_intent">
+        <dmn:inputExpression typeRef="string" id="_4EA015ED-0248-4C5F-92D9-1B617CCB037C">
+          <dmn:text>intent</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="dt_in_topic">
+        <dmn:inputExpression typeRef="string" id="_1EA3852A-36FB-4B6F-88BC-B553B827DDB2">
+          <dmn:text>topic</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_E3876CEB-4BC6-4C80-AADE-F55315C14A87">
+        <dmn:inputExpression typeRef="Any" id="_70259121-654E-4E78-9847-9061929064F4">
+          <dmn:text>subtopics</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="dt_in_compare_mode">
+        <dmn:inputExpression typeRef="boolean" id="_F97C7EE2-9BBC-488B-B5CD-93F29B242196">
+          <dmn:text>compare_mode</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_474A6C42-3423-4FDD-80C4-531191FD4B5D">
+        <dmn:inputExpression typeRef="boolean" id="_F2215BB8-30EA-4BF0-9CD2-E7B963592A45">
+          <dmn:text>time_compare</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="dt_in_need_disambig">
+        <dmn:inputExpression typeRef="boolean" id="_4F280E77-72E1-401B-A924-DA1B0D3BB64E">
+          <dmn:text>need_disambig</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_F16F4C74-B4AB-41E6-8642-6E7E8C027931">
+        <dmn:inputExpression typeRef="Any" id="_1131E628-0ACF-4B8D-90B2-87C87494C749">
+          <dmn:text>potential_type</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:output id="dt_out_macro_family" name="query_plan" typeRef="string" />
+      <dmn:output id="_A5E66E7D-8782-4E4B-BC92-B3B77646DD9F" name="answer_plan" typeRef="string" />
+      <dmn:annotation name="" />
+      <dmn:rule id="rule_what_major_compare">
+        <dmn:inputEntry id="rule_what_major_compare_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_intent">
+          <dmn:text>&quot;attributes&quot;, &quot;definition&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_topic">
+          <dmn:text>&quot;major&quot;, &quot;program&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_compare_mode">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_compare_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_major_compare_query_plan">
+          <dmn:text>&quot;what_major_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_major_compare_answer_plan">
+          <dmn:text>&quot;what_major_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Route Major/Specialization/AcademicProgram entity comparisons to the academic compare plan.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_what_ops_major_spec_academic_attr">
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_intent">
+          <dmn:text>&quot;attributes&quot;, &quot;definition&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_topic">
+          <dmn:text>&quot;major&quot;, &quot;program&quot;, &quot;career&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_ops_major_spec_academic_attr_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_ops_major_spec_academic_attr_query_plan">
+          <dmn:text>&quot;what_ops_major_spec_academic&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_ops_major_spec_academic_attr_answer_plan">
+          <dmn:text>&quot;what_ops_major_spec_academic&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + attributes + major/program → normalize Major/Specialization/AcademicProgram to parent Major, then collect academic tree.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_057F5E59-1B06-4CB8-9799-B14876290300">
+        <dmn:inputEntry id="_14C2FEAC-B7D5-4E09-AFB0-EDA6F6F107E4">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D273C358-083E-4B99-839F-C2A991FE46E5">
+          <dmn:text>&quot;attributes&quot;, &quot;definition&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_78C3ABF7-1A36-4044-BBBA-CBE99DE3F5A6">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BDB26B1A-A3D7-41DB-A741-034443EABBDA">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4516CEF4-F0FE-46D8-9225-742AB58F166B">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4DDBF423-0DCE-47AF-B7FF-1E28C62255EB">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F46101D3-6FED-48AB-A4EC-8290A178004A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0D2F98DA-2521-4C95-9CAE-AE4993313BFD">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_7E561C12-09E8-42A9-B593-CA728E80F216">
+          <dmn:text>&quot;what_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_C5ED4793-19B3-486A-AB91-9C70F0AFC9D3">
+          <dmn:text>&quot;what_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_what_support_attribute">
+        <dmn:inputEntry id="rule_what_support_attribute_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_intent">
+          <dmn:text>&quot;attributes&quot;, &quot;definition&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_topic">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;support&quot;, &quot;academic_policy&quot;, &quot;scholarship&quot;, &quot;tuition&quot;, &quot;payment&quot;, &quot;course_registration&quot;, &quot;student_document&quot;, &quot;graduation&quot;, &quot;major_transfer&quot;, &quot;internship&quot;, &quot;event&quot;, &quot;activity&quot;, &quot;club&quot;, &quot;service&quot;, &quot;department_support&quot;, &quot;discipline&quot;, &quot;reward&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_attribute_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_support_attribute_query_plan">
+          <dmn:text>&quot;what_support_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_support_attribute_answer_plan">
+          <dmn:text>&quot;what_support_attribute&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Route support / academic-policy WHAT attribute and definition questions to the student-support specialization.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_what_support_relation">
+        <dmn:inputEntry id="rule_what_support_relation_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_intent">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_topic">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;support&quot;, &quot;academic_policy&quot;, &quot;scholarship&quot;, &quot;tuition&quot;, &quot;payment&quot;, &quot;course_registration&quot;, &quot;student_document&quot;, &quot;graduation&quot;, &quot;major_transfer&quot;, &quot;internship&quot;, &quot;event&quot;, &quot;activity&quot;, &quot;club&quot;, &quot;service&quot;, &quot;department_support&quot;, &quot;discipline&quot;, &quot;reward&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_relation_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_support_relation_query_plan">
+          <dmn:text>&quot;what_support_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_support_relation_answer_plan">
+          <dmn:text>&quot;what_support_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Route support-domain WHAT relation questions to the student-support relation specialization.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_1D5A9677-0EBA-4782-8269-16651AC63B9B">
+        <dmn:inputEntry id="_25362CE8-4490-4597-8039-3812FE07675C">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_48278D55-1E09-418A-BF6E-9BBC2D2B0625">
+          <dmn:text>&quot;attributes&quot;, &quot;definition&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_764807FB-022E-4E8C-9B13-63DF63F108EA">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6D25BFA0-0829-4A92-A94F-A794B3A428F4">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3F29CB0E-5DBC-40B7-9AAE-213F6141EFE6">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B14E0868-BE88-467F-910A-A06987E41A53">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6EAE55A8-C40D-4DB8-9490-F5AA12B36BF4">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0D4C4858-248F-41FA-8875-00A6782A17F5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_C2A97380-4D85-4B5D-91A7-B1C44E44B7AD">
+          <dmn:text>&quot;what_attributes&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_563470E1-3578-4420-B3FB-9678A998EBDC">
+          <dmn:text>&quot;what_attributes&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_4DE7B642-9D5A-4921-A2A6-AA2DA4F41716">
+        <dmn:inputEntry id="_3E46147F-8BD4-4D1D-811A-36E01FF19AEB">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7CBE1925-77E0-4039-94AB-67784170BDE3">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_DE3FF75A-EEF4-4F00-BA8D-94645DF56246">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3DD4D14D-DEA3-441F-9057-7E5BFCD81D49">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_71B0E07A-276C-4C32-91F9-D24D5AEB6196">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4F56592E-0908-4C9F-9DC9-333F0EDA7FCA">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3CF466B9-3B69-49A2-93B5-02B15875BDDE">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4709A362-6C92-4D7A-A302-67FFD62B93F2">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_69C84A97-399C-452F-B257-66304D87DD90">
+          <dmn:text>&quot;what_relation_compare_time&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_608DCF81-134A-43B6-8CFB-A9DCDF0302BA">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_B4A4C396-8284-4D2E-B18F-63C92807A610">
+        <dmn:inputEntry id="_0096C320-CFEE-4883-BF15-A4607039FD42">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_CC55D77D-9EB4-40B0-94C4-D0A620A3A9E1">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EBC1E030-B507-433F-A0A1-2553CD042F94">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_DEB3068E-891A-49B9-9BB5-404027237779">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_399C4207-A417-4184-9724-79E70C56DF5A">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3383CEE2-C649-4DCF-AA57-AAA1BBBB9463">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_19BA843C-4C18-43DA-A652-CBDE42ED99D8">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4124B0F3-3597-4CB2-AD5B-BFD60DC2F4A9">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_8E10B989-3E6C-4452-9615-6880084BE5E4">
+          <dmn:text>&quot;what_relation_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_47B6A746-E253-43E2-885C-99A353AD7C9C">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_B1C2D3E4-REL-PEOPLE-0001">
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE02">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE03">
+          <dmn:text>&quot;people&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C7F2FC29-8524-4C4D-8659-BCF6099CF517">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-PEOPLE-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_B1C2D3E4-REL-PEOPLE-OE01">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_B1C2D3E4-REL-PEOPLE-OE02">
+          <dmn:text>&quot;what_relation_people&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + relation + people → what_relation_people</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_B1C2D3E4-REL-MAJOR-0001">
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE02">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE03">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7994B971-2197-483A-BBCE-90E9EAD1F450">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-MAJOR-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_B1C2D3E4-REL-MAJOR-OE01">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_B1C2D3E4-REL-MAJOR-OE02">
+          <dmn:text>&quot;what_relation_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + relation + major → what_relation_major</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_B1C2D3E4-REL-FACULTY-0001">
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE02">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE03">
+          <dmn:text>&quot;faculty&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7E587F99-4B25-471E-9BB2-B409F18D0B77">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1C2D3E4-REL-FACULTY-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_B1C2D3E4-REL-FACULTY-OE01">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_B1C2D3E4-REL-FACULTY-OE02">
+          <dmn:text>&quot;what_relation_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + relation + faculty → what_relation_major</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_2C6853B1-6E30-42E9-A76C-AEA275C2081D">
+        <dmn:inputEntry id="_F5B0765B-DBE3-4E19-A003-3F774F30FD7B">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_CB5E4D42-A31F-44FD-A51D-4767CBC763EE">
+          <dmn:text>&quot;relation&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3FFEA4FF-3D0B-4511-812D-BF24C37D998A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5E014DCA-3FA3-42B2-8725-BFD2575A703E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_26CD4A26-020B-456C-AE86-FCF6901C4BC0">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_73BD2014-EE68-4904-8E92-3834538B6738">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3C966BB5-464D-4AF5-876D-00FC7441378A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B00EF08E-F2C0-4852-8AF7-B473A6F0E541">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_05F39E70-B5CA-4549-B6DC-FB10C8155F4A">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_44624376-3B22-483C-ACD2-51BED1A883AE">
+          <dmn:text>&quot;what_relation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_what_support_list">
+        <dmn:inputEntry id="rule_what_support_list_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_intent">
+          <dmn:text>&quot;list&quot;, &quot;count&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_topic">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;support&quot;, &quot;academic_policy&quot;, &quot;scholarship&quot;, &quot;tuition&quot;, &quot;payment&quot;, &quot;course_registration&quot;, &quot;student_document&quot;, &quot;graduation&quot;, &quot;major_transfer&quot;, &quot;internship&quot;, &quot;event&quot;, &quot;activity&quot;, &quot;club&quot;, &quot;service&quot;, &quot;department_support&quot;, &quot;discipline&quot;, &quot;reward&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_support_list_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_support_list_query_plan">
+          <dmn:text>&quot;what_support_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_support_list_answer_plan">
+          <dmn:text>&quot;what_support_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Route support-domain WHAT list/count questions to the student-support list specialization.</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_A1B2C3D4-PEOPLE-LIST-0001-000000000001">
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE02">
+          <dmn:text>&quot;list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE03">
+          <dmn:text>&quot;people&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2766B620-A9E9-4E19-9D3A-B2E7FA36F271">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-PEOPLE-LIST-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-PEOPLE-LIST-OE01">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-PEOPLE-LIST-OE02">
+          <dmn:text>&quot;what_list_people&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + list + people → what_list_people answer plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_A1B2C3D4-MAJOR-LIST-0001-000000000003">
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE02">
+          <dmn:text>&quot;list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE03">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_395DF5D6-F785-4127-80D5-19022ECAC3A1">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-LIST-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-MAJOR-LIST-OE01">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-MAJOR-LIST-OE02">
+          <dmn:text>&quot;what_list_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + list + major → what_list_major answer plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_AA33A1D6-5E25-41B8-99C1-AACCBF38754B">
+        <dmn:inputEntry id="_53E39C61-4880-421B-8638-B2934FFF7D03">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8B16B830-BCDE-45BB-81EA-1EB1944B9EBC">
+          <dmn:text>&quot;list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F7BA5FA6-F4C2-42EA-B79C-351D69C776FF">
+          <dmn:text>&quot;faculty&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3C743BD8-30B4-4F0A-B993-81AF549F58E0">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D454E022-FD5B-42EA-BB22-8ECC7D55BF23">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B24E5A9A-4226-4392-B228-0B50433E2694">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_44396C9C-93C9-4524-85D5-2538DE38526D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EE6C86A4-56BE-4D66-BD4C-47CFBF9C0776">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_C6EFB7C1-F716-42BA-8E42-6EF6F0E93B33">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_B8DCE6F3-41C3-4441-970F-256ABD24AB76">
+          <dmn:text>&quot;what_list_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + list + faculty → what_list_major answer plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_6F3713DF-5166-43EA-93F5-4974456E3AFE">
+        <dmn:inputEntry id="_F010B770-D281-41AB-8E55-7D9C9D25BCB3">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_875491DF-B400-49A4-B8DF-7A49229FD67C">
+          <dmn:text>&quot;list&quot;, &quot;career_list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_897483BD-8AC2-419E-8309-16D9C400CCF0">
+          <dmn:text>&quot;career&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_531C01C5-17B5-4D7C-882B-655309A2A06D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_26C60DE2-1251-4292-917A-33E6DA95F8CD">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4D4E4118-4747-4DAF-AA23-63F60E2344FF">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FC947FC2-E853-4217-B1F4-8973DB408E94">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_386243F5-556F-4EBD-8937-8CD376B8740F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_1FB844D6-4F45-48EF-ACEE-330F6D8D576C">
+          <dmn:text>&quot;what_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_BBB30C7A-5128-481E-8435-7C41708107CE">
+          <dmn:text>&quot;what_compare&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_D44F5FF0-9BEE-45F1-89DE-70D1AEDCA9A0">
+        <dmn:inputEntry id="_805B160E-BBCE-46F5-A0B1-9EBD123263F5">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5E7D62D6-03DF-4A0E-B2D2-167ACF928A70">
+          <dmn:text>&quot;list&quot;, &quot;career_list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0B557643-4854-4C23-B3CC-3B3B76602044">
+          <dmn:text>&quot;career&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_778F8789-E3E8-47EA-9F02-4644AC4F6C2E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0CD4FF3C-FC65-4052-B902-9CEF764CA0DA">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D78F3BCD-11BF-4B85-8D90-7C240EFD4BFA">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F252ED89-620D-4C2E-87B2-BEF0C21FAA08">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_ABE068FC-A44E-49D3-87E3-5ADA4E0FBBC6">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_C7D8CC95-B12D-4598-B383-02D3346053FE">
+          <dmn:text>&quot;what_major_career_recommendation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_71649F75-E3BA-40D2-A874-257E72F46469">
+          <dmn:text>&quot;what_major_career_recommendation&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_08B72D94-EE80-4A85-BF1C-AF344A64A997">
+        <dmn:inputEntry id="_C518A9A5-703E-4E7F-A9F2-C05B06041E36">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_286D6BBC-4F55-48D4-B419-8727052390AD">
+          <dmn:text>&quot;count&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8070B6E3-3208-45AB-AEAD-4E032144A3E0">
+          <dmn:text>&quot;people&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7F7C79FD-8476-4AA1-95CF-72B929CC44E4">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FA4B1334-26A9-46DC-A83E-B7DADB365DF8">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D072425B-902A-4227-B81B-C9C83C8B502B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B180C116-02DE-473E-9CE3-15A17ACEE61F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_342FB209-6AD8-4168-B5F0-0E8E5FCF4111">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_6038EA31-D44E-4296-AB7B-1739BBD77786">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_126A36EC-9F75-4310-9558-582DF5A270DC">
+          <dmn:text>&quot;what_count_people&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + count + people → what_count_people answer plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_A1B2C3D4-MAJOR-COUNT-0001-000000000004">
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE02">
+          <dmn:text>&quot;count&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE03">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D683E594-CBBB-4CB1-A01D-A6F5F87E5394">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-MAJOR-COUNT-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-MAJOR-COUNT-OE01">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-MAJOR-COUNT-OE02">
+          <dmn:text>&quot;what_count_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + count + major → what_count_major answer plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_A1B2C3D4-FACULTY-COUNT-0001-000000000006">
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE01">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE02">
+          <dmn:text>&quot;count&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE03">
+          <dmn:text>&quot;faculty&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE04">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE05">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B39C151A-6EAF-4B55-8663-C7AE6660185A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE06">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1B2C3D4-FACULTY-COUNT-IE07">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-FACULTY-COUNT-OE01">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_A1B2C3D4-FACULTY-COUNT-OE02">
+          <dmn:text>&quot;what_count_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + count + faculty → what_count_major answer plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_60404C6F-1ADC-48D3-92E5-3EEDC447721E">
+        <dmn:inputEntry id="_909791AC-DFC4-4163-A256-9AF6AA3F3745">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BC995A63-B3B6-4B2C-8C8E-1B7000ED964D">
+          <dmn:text>&quot;list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6972AAFA-57CD-4545-B68B-81BCDEAAE0E5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AC61873E-7473-46E0-949F-9CF56BD97A87">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2A2750E9-1D71-4BC6-A7B3-C57983C592C2">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_ECD0A8CD-E9EA-4F39-A6B4-6EF4B8BAE81B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5EE79F87-53C6-4E1B-B738-F670A8E785E5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_85FA655E-049C-4464-9150-51650EB774FE">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_92839A5E-8F0C-4A67-9FF2-BABFC75BA32A">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_F0EA6DFA-4929-4120-A3AF-8C9BF3848C04">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_FB725261-BBF8-4F14-A0D8-3EB86432CEF9">
+        <dmn:inputEntry id="_6458A675-27B2-4639-BAD4-A6D995BE252F">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C24C4327-11F2-4129-BF51-C8E9AC2E98DB">
+          <dmn:text>&quot;count&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C0D069BF-CDBC-43C2-9C5B-66399175C0A2">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0E785A9B-D380-430B-8177-9B08A0A57D87">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_DCDD168C-416B-4D4A-89D9-3D39EE638225">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AEAF3A7E-69BB-4503-A0F3-B26D6C17FA1F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5BD53B1B-D404-4127-BB0D-3EC2F33253B9">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0B2721A5-47A3-4331-ABEE-B76B8AB7DBA6">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A042D0D6-B664-4A8D-9B55-A50E7503C4A3">
+          <dmn:text>&quot;what_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_54335A5D-41A3-406B-B249-382DFAEE23CC">
+          <dmn:text>&quot;what_count&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_what_score_constraint_list">
+        <dmn:inputEntry id="rule_what_score_constraint_list_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_intent">
+          <dmn:text>&quot;constraint-list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_topic">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;score&quot;, &quot;quota&quot;, &quot;cutoff&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_compare_mode">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_score_constraint_list_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_score_constraint_list_query_plan">
+          <dmn:text>&quot;what_score_constraint_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_score_constraint_list_answer_plan">
+          <dmn:text>&quot;what_score_constraint&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + constraint-list + score/quota/cutoff subtopic → score constraint plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="rule_what_major_constraint_list">
+        <dmn:inputEntry id="rule_what_major_constraint_list_qtype">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_intent">
+          <dmn:text>&quot;constraint-list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_topic">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_compare_mode">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="rule_what_major_constraint_list_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="rule_what_major_constraint_list_query_plan">
+          <dmn:text>&quot;what_major_constraint_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="rule_what_major_constraint_list_answer_plan">
+          <dmn:text>&quot;what_major_constraint&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>what + constraint-list + major topic → Major/Specialization peer constraint plan</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_1644C9E2-7685-4EF8-8216-FA86DD073A1E">
+        <dmn:inputEntry id="_5CE5D59D-E670-480C-A4E6-B49A83EE32DF">
+          <dmn:text>&quot;what&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B91B4C77-B8BF-4273-A4E2-AB63AA92D5CF">
+          <dmn:text>&quot;constraint-list&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_61DC5193-7A45-483F-902B-998C147D0000">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F5AFD394-342C-473B-9E7E-DAE59AA1272F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C585680E-188E-41CB-AACA-A8339F4411BD">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_709D3670-2CAB-4C96-B085-EF0CB52674F6">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9B7CC462-5391-4550-B929-93060D932E77">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EC7CC5DA-9515-4E95-9F9C-4371B1AB3124">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_494B4E78-C8AC-4525-84A1-1156A6C73439">
+          <dmn:text>&quot;what_score_constraint_list&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_7580CDA2-349F-4CEE-A577-5B01148DCD69">
+          <dmn:text>&quot;what_score_constraint&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r0_placeholder">
+        <dmn:inputEntry id="r0_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r0_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r0_ie_topic">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_799CF155-04F8-4E45-9699-AD9E4B936E00">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r0_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_94C3EF38-50C9-4282-B4AF-7E929277A01D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r0_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_039D1FF7-DB06-4D2D-B82C-DEFEAA160E70">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r0_oe_macro_family">
+          <dmn:text>&quot;why_explain_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_7669E2A0-C9C9-4CE6-9ECB-E44DFDF8AE88">
+          <dmn:text>&quot;why_explain_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao nên học ngành CNTT?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_FA68F1C8-2E8F-422A-AFEC-4FF9C5A395B9">
+        <dmn:inputEntry id="_4747B5F4-B40D-4EA2-8024-4B6ADB75A454">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4D8EF1D5-CD7E-437D-AFC1-40697D33D794">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FE2966AC-093D-494F-9B9C-36CF45C000B7">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_95633A91-0B67-4A22-85A6-FE5FDF4D3FEB">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_599659CD-3056-4026-81B4-E3449D5A5EF5">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2648E6DE-36FE-4400-B23E-94889FBC3161">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5CC98F5B-889C-4B6A-8DD5-6932A1610AB3">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_22A401C7-5D43-4516-8F70-500884FABB84">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_62AC6392-EE8C-4F1A-899E-BB65EB3CD6B0">
+          <dmn:text>&quot;why_keyword_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_8831EF28-5AD4-4574-9373-706054544E07">
+          <dmn:text>&quot;why_keyword_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_A182DE0E-0E0B-4693-B4B1-CFDCC5A5BE06">
+        <dmn:inputEntry id="_F8E4836E-9189-4DD7-8BED-B4D1E25E8906">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AD35CBAB-3FCC-41C0-8A22-E438958BEC83">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_CDD4691E-07A3-4C15-B7DC-C8787839F886">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B14F8414-4DD1-4FE1-A32F-2D693ED563CD">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E49E2ADF-299F-4D9E-A648-E7EC945A2D43">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_22C8F9DD-7B8E-493F-A4EB-BC99F200B305">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A2632171-59C4-482E-BC22-EA969FBCDDF7">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9CC24D90-9C47-4153-AA82-A3BF36C1945B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_112F4D77-47FD-4045-8406-E9C7C5701B89">
+          <dmn:text>&quot;why_explain_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_DD7AAB2C-1144-4FC6-8E29-1ED79B805985">
+          <dmn:text>&quot;why_explain_compare_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao nên học ngành CNTT thay vì marketing</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r1_why_admission">
+        <dmn:inputEntry id="r1_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r1_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r1_ie_topic">
+          <dmn:text>&quot;admission&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r1_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r1_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_74998189-D5FB-4F90-9B6F-8DFE34DF389B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r1_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_57E50CFE-6E67-40FC-9149-D7A76BD142C9">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r1_oe_query_plan">
+          <dmn:text>&quot;why_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r1_oe_answer_plan">
+          <dmn:text>&quot;why_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao nên xét tuyển vào GDU? Vì sao có nhiều phương thức?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_AC3A263C-C304-4AD1-837A-C4AA3BD2A635">
+        <dmn:inputEntry id="_E0112406-BD64-4E81-9EBE-4467A03E2566">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_ABB59766-E51C-40F1-B245-F4F636DBEAAA">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_371DF60F-CB23-435D-85B9-DA9979F5C1BA">
+          <dmn:text>&quot;admission&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_54B525EF-0B8C-4353-A6C6-8AACC71206B1">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A23713B9-7066-4004-8781-BD0E81B1B1DA">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4E46551A-7EFA-43D2-A382-25BD86A26117">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_87A6DACA-64FF-4CFD-A068-DBB513844A1E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7AC63687-CB84-462E-95BF-AA1147A070A5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_AD6B128F-C10C-4FC9-9891-147C1FFC1BEB">
+          <dmn:text>&quot;why_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_C12918D0-2BCB-4A90-A771-C8E4473FA6A2">
+          <dmn:text>&quot;why_compare_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r2_why_course">
+        <dmn:inputEntry id="r2_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r2_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r2_ie_topic">
+          <dmn:text>&quot;course&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r2_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r2_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_82E4DBD0-59EC-42CD-8E58-4D4525190A62">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r2_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F5EB8725-8795-455B-A606-CF21E1BCF152">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r2_oe_query_plan">
+          <dmn:text>&quot;why_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r2_oe_answer_plan">
+          <dmn:text>&quot;why_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao phải học môn X?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_E03F0E16-4621-4D22-A05E-B47DA39AA74F">
+        <dmn:inputEntry id="_DB929CDA-191D-4EC8-8BC1-C9389FA83A73">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_422268EF-52BE-49A5-A39E-40770DF384DE">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_213E01F3-D5D9-4200-BB61-47A2A6ADF221">
+          <dmn:text>&quot;course&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9E931603-EB10-41DE-A806-B916FECC4E14">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A38E064D-B972-434B-918C-831D60F04609">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BE6EA079-FF5C-4296-946B-6489BAD687EA">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A1D9CCD1-513A-4EF8-8F8A-7C1FC2D677CB">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_33B0E1FD-F4A9-4C7C-B384-0240C0EA35E7">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_13B5CC11-614E-49F6-9B4E-52A7DD9D1487">
+          <dmn:text>&quot;why_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_7E224679-3BA9-416F-856C-BD77B3986EBB">
+          <dmn:text>&quot;why_compare_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r3_why_faculty">
+        <dmn:inputEntry id="r3_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r3_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r3_ie_topic">
+          <dmn:text>&quot;faculty&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r3_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r3_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7F564E39-D941-4B65-B713-9DD8508FD14B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r3_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3F490AB5-739A-4EA2-9DEC-D07CFC024933">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r3_oe_query_plan">
+          <dmn:text>&quot;why_faculty&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r3_oe_answer_plan">
+          <dmn:text>&quot;why_faculty&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao nên chọn Khoa X?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_07C5CAC9-4619-42F7-B0F6-BDA411467896">
+        <dmn:inputEntry id="_A4BFC417-7C93-4DF1-A5CA-5ADF4F2A2842">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8AC51257-0954-4724-B003-9EA319C8824A">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1C899BE5-DF0D-4C32-9D24-4FE679EDBEE5">
+          <dmn:text>&quot;faculty&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_23526639-1E4B-4800-BF65-A3839939C647">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4EB21CF5-361A-4B2E-9FEB-BC291F2210D3">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7BE89DE3-22E7-4076-9A2B-D95FB027824C">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5897B24C-77CE-4574-B625-E61FEA513DE0">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2E9E8CEC-648E-480B-B225-48D05EF43D45">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_BA67D64C-1658-495D-86BC-4986596C2B71">
+          <dmn:text>&quot;why_faculty&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_AA868628-3A71-4EEF-B4AC-4FBB0CE34EE5">
+          <dmn:text>&quot;why_compare_faculty&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r4_why_fee">
+        <dmn:inputEntry id="r4_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r4_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r4_ie_topic">
+          <dmn:text>&quot;fee&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r4_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r4_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_63089A41-78F8-4475-8483-EF0BEEBE8C9F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r4_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_329D50F9-5F03-46C1-9F9A-25ACE2685C14">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r4_oe_query_plan">
+          <dmn:text>&quot;why_fee&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r4_oe_answer_plan">
+          <dmn:text>&quot;why_fee&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao học phí cao/thấp? Vì sao cần đóng học phí sớm?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r5_why_policy">
+        <dmn:inputEntry id="r5_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r5_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r5_ie_topic">
+          <dmn:text>&quot;policy&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r5_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r5_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_22329802-6594-4115-AF35-F7C026E33F22">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r5_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8B19BCB1-F2D7-4FA7-ADC7-311EC97FC8A0">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r5_oe_query_plan">
+          <dmn:text>&quot;why_policy&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r5_oe_answer_plan">
+          <dmn:text>&quot;why_policy&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao có điểm cộng ưu tiên? Vì sao cần quy đổi điểm?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r6_why_program">
+        <dmn:inputEntry id="r6_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r6_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r6_ie_topic">
+          <dmn:text>&quot;program&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r6_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r6_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8A694210-3FC4-46F0-B816-1879DBD9DD57">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r6_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_02376240-2364-4D30-9A20-447C12A05D24">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r6_oe_query_plan">
+          <dmn:text>&quot;why_program&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r6_oe_answer_plan">
+          <dmn:text>&quot;why_program&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao CTĐT ngành X phù hợp?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_03AF9538-5F0F-44C2-9DB0-D267D33F3B9B">
+        <dmn:inputEntry id="_EBE85EAE-8AB0-4A76-9E46-19E0B8D21382">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_05EDFFD3-75F2-4941-A3E2-62C86CB4BB9A">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C523C801-5F3D-4E97-966C-5419D328E9A7">
+          <dmn:text>&quot;program&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F839EF54-605A-4521-9AE2-D57661F94A56">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_DBDC15DF-6C51-42AD-9016-CD5D1D251AB2">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B6F07376-A482-4BEE-AB26-6ECA14E43C64">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_77252B5F-F6E1-4771-AD87-FD7C2FC0249B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8C22682E-171F-4ABD-8ADE-5B84BB2C88AB">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_2B8189F5-303C-4334-8248-557C04320F5E">
+          <dmn:text>&quot;why_program&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_AD72D4E5-3081-4C17-B01F-4A97A3267431">
+          <dmn:text>&quot;why_compare_program&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r7_why_student_life">
+        <dmn:inputEntry id="r7_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r7_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r7_ie_topic">
+          <dmn:text>&quot;student_life&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r7_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r7_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A109390F-B599-4A04-91FF-F5F3141BF442">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r7_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_22045697-0439-4341-9391-2D6D312DD98D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r7_oe_query_plan">
+          <dmn:text>&quot;why_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r7_oe_answer_plan">
+          <dmn:text>&quot;why_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao nên tham gia CLB / hoạt động sinh viên?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_FB16F865-BC30-4104-AA76-D132BE89F024">
+        <dmn:inputEntry id="_851A2FF0-29ED-4D81-A059-7399FFE1251C">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7655C479-5A4B-4294-B9A0-45E24145AE5C">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0888D730-DDE5-4EE6-8877-1463FA90C4DE">
+          <dmn:text>&quot;student_life&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BC0891EA-945A-4427-BE8B-78BF783673E9">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D53A23DE-9C50-431F-A644-61D32619E704">
+          <dmn:text>true</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_113FDC6B-F12A-4EC8-9F37-8DB21A77DDD2">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4676B474-C4D4-4403-830C-81DBE9963587">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_120089DC-8006-46BA-88AE-1DBC4EA9A3C2">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_FD062A20-F18C-474C-85B1-BCF93C2D3FC0">
+          <dmn:text>&quot;why_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_5A3238C3-2851-4DD9-B7B7-992B53ACBE13">
+          <dmn:text>&quot;why_compare_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r8_why_university">
+        <dmn:inputEntry id="r8_ie_qtype">
+          <dmn:text>&quot;why&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r8_ie_intent">
+          <dmn:text>&quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r8_ie_topic">
+          <dmn:text>&quot;university&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r8_ie_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r8_ie_compare_mode">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_23084717-7E4B-4A9B-A679-B4974F01256F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r8_ie_need_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FF09EDBF-1E4E-4F43-8652-7720DDBF35B5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r8_oe_query_plan">
+          <dmn:text>&quot;why_university&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r8_oe_answer_plan">
+          <dmn:text>&quot;why_university&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Vì sao nên chọn GDU?</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_admission">
+        <dmn:inputEntry id="r_how_admission_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_admission_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_admission_topic">
+          <dmn:text>&quot;admission&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_admission_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_admission_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EC548D7E-0DAD-42ED-BC97-35447DEA7435">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_admission_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_ECBF9242-7C5A-488B-AB62-DC5F1C42F47F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_admission_out">
+          <dmn:text>&quot;how_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_admission_answer">
+          <dmn:text>&quot;how_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Quy trình xét tuyển</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_campus_contact">
+        <dmn:inputEntry id="r_how_campus_contact_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_campus_contact_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_campus_contact_topic">
+          <dmn:text>&quot;campus_contact&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_campus_contact_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_campus_contact_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_759CD142-A167-479D-8F1B-2A821EED7BC2">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_campus_contact_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_13A21936-4A54-4BAF-A3D9-791D520A653D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_campus_contact_out">
+          <dmn:text>&quot;how_campus_contact&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_campus_contact_answer">
+          <dmn:text>&quot;how_campus_contact&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Liên hệ/Địa điểm</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_course">
+        <dmn:inputEntry id="r_how_course_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_course_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_course_topic">
+          <dmn:text>&quot;course&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_course_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_course_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9BED2043-634F-4B66-8D95-FA50C6F26466">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_course_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_956C4F80-A76D-4E31-9BF8-178EED98EE8B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_course_out">
+          <dmn:text>&quot;how_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_course_answer">
+          <dmn:text>&quot;how_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Lộ trình học tập</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_facilities">
+        <dmn:inputEntry id="r_how_facilities_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_topic">
+          <dmn:text>&quot;facilities&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_56407F3B-3E95-45A0-8D81-F06CEF2BD259">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_491D8BF1-D464-4EAE-BB5D-4DBAC152EDE5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_facilities_out">
+          <dmn:text>&quot;how_facilities&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_facilities_answer">
+          <dmn:text>&quot;how_facilities&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Sử dụng cơ sở vật chất</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_fee">
+        <dmn:inputEntry id="r_how_fee_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_fee_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_fee_topic">
+          <dmn:text>&quot;fee&quot;, &quot;policy&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_fee_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_fee_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_41A05067-6519-4C87-A633-AFDE4531ED53">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_fee_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1C2DA3B0-E2B6-4979-8327-EADB1875E846">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_fee_out">
+          <dmn:text>&quot;how_fee&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_fee_answer">
+          <dmn:text>&quot;how_fee&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Học phí và tài chính</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_major_guidance">
+        <dmn:inputEntry id="r_how_major_guidance_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_major_guidance_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_major_guidance_topic">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_major_guidance_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_major_guidance_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BE2A0CB9-7083-4FCC-A437-262F85269A35">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_major_guidance_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B8A950ED-3F38-4248-9DFD-DA07633013EF">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_major_guidance_out">
+          <dmn:text>&quot;how_major_guidance&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_major_guidance_answer">
+          <dmn:text>&quot;how_major_guidance&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Hướng nghiệp/Chọn ngành</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_student_life">
+        <dmn:inputEntry id="r_how_student_life_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_student_life_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_student_life_topic">
+          <dmn:text>&quot;student_life&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_student_life_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_student_life_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F07672F8-173D-44EE-8968-BFAE3CB32861">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_student_life_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_CC10C954-9155-4799-A072-ED961D9A02EA">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_student_life_out">
+          <dmn:text>&quot;how_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_student_life_answer">
+          <dmn:text>&quot;how_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Đời sống sinh viên</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_career_position">
+        <dmn:inputEntry id="r_how_career_position_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_career_position_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_career_position_topic">
+          <dmn:text>&quot;career&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_career_position_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_career_position_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_56DEA891-4952-4CFF-B5A9-6977B56C7BED">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_career_position_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_career_position_potential">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_career_position_out">
+          <dmn:text>&quot;how_career_position&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_career_position_answer">
+          <dmn:text>&quot;how_career_position&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Thông tin vị trí nghề nghiệp</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_skill_training">
+        <dmn:inputEntry id="r_how_skill_training_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_training_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_training_topic">
+          <dmn:text>&quot;skill&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_training_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_training_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4039C7E3-0F67-4D93-ACCA-0901B175A3DE">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_training_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_training_potential">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_skill_training_out">
+          <dmn:text>&quot;how_skill_training&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_skill_training_answer">
+          <dmn:text>&quot;how_skill_training&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Rèn luyện kỹ năng</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_86A730DD-9A58-41FA-B35B-4FBE560BBE9E">
+        <dmn:inputEntry id="_B4A6B461-478D-41AF-8C76-A50E41645798">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F5E477F7-42A9-4720-A2AB-2D21641C7597">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BF55F418-30FC-4C8F-AE68-E40369997C66">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_36DDF770-6269-4C2C-8B65-2C1D1D77E7D3">
+          <dmn:text>&quot;career_path&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_9E0076D0-AE74-4A2E-87D1-DC824D490808">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_25874309-4B60-4C24-AA08-B7D2B2768165">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3578D412-1B61-4B3B-825C-A5C2499BFD6A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0C905957-2311-45E7-9CE2-FB979A6ECF34">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_0659CDA5-7D6B-4315-A7BF-8BC9545BA484">
+          <dmn:text>&quot;how_major_to_career_path&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_7F0FB2EC-6A16-416C-9919-50AC9530C0D9">
+          <dmn:text>&quot;how_major_to_career_path&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Lộ trình nghề nghiệp của ngành</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_961EB271-900A-400C-B285-94C55B50C17E">
+        <dmn:inputEntry id="_CBD676A3-5029-4F7D-8D0B-325DF47DE02C">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E3EBFF71-9EE3-4330-BD30-A087A4CF6350">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A01A6236-87CA-4F02-81F7-94E676461276">
+          <dmn:text>&quot;skill&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1ED7A884-782F-45AF-A532-B9F70419FA05">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FC1E345A-DCBC-4BB5-8355-D546573C1D38">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FE100654-8272-4947-BC38-10BF01F81AFC">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2B6C8B2F-4C98-403A-A807-61EBDAE2CFF5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B7EA7008-F61E-493C-9081-3C2E532AE9C0">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_4183B51A-587E-4BDA-B704-783F774335FC">
+          <dmn:text>&quot;how_skill_to_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_D1D57992-78B2-4FBE-A497-D324CEB660EA">
+          <dmn:text>&quot;how_skill_to_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Ngành học phù hợp với kỹ năng</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_skill_to_major">
+        <dmn:inputEntry id="r_how_skill_to_major_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_to_major_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_to_major_topic">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_to_major_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_to_major_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D17295EE-8B40-42E0-A0CC-27C858D6A197">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_to_major_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_skill_to_major_potential">
+          <dmn:text>&quot;admission&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_skill_to_major_out">
+          <dmn:text>&quot;how_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_skill_to_major_answer">
+          <dmn:text>&quot;how_keyword_admission&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_786C80F8-67E8-418D-B21A-622F4EBFD802">
+        <dmn:inputEntry id="_21AF709C-47E5-4429-86DD-2BC718069646">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4F6C8077-86A7-4008-BBD1-6FB57CC13005">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_EE523FA4-993E-4B45-9649-8B1B7F0F8ABF">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E88D64DB-687A-4A65-8932-18A81112D653">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_DE99E028-D03C-4B4E-BAC0-675F123A5881">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FD4C6A30-923B-4FFB-8DBB-A1AF27E85B9E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_10B1D56A-ECCC-4C20-812B-0B5D83F446C1">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4692E99E-92CA-4F3F-A8DC-D07370D99B37">
+          <dmn:text>&quot;campus_contact&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_A57D9DBA-BECC-4C0D-8A78-6C483C6DB1BE">
+          <dmn:text>&quot;how_campus_contact&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_126C6A3E-918F-45A5-AB13-055D5ABC115D">
+          <dmn:text>&quot;how_keyword_campus_contact&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_64063EE6-EAF8-42B0-8793-5F4455112BD1">
+        <dmn:inputEntry id="_4EDB4153-FE26-4A3C-9167-CF5F510976C2">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D2AF9BA3-F7AC-42D3-AEC4-0A6C634D6A29">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_16949A57-D54B-4650-9DE0-2606A735B604">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_69809889-1B08-4AD9-B1CF-D992FB440705">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_DE7CB489-A1BC-4673-9209-6A0D2AA26C43">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_75C48147-BC52-4062-8F87-B0C967CABB9B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D7AAC9C9-6263-4FC9-ACE9-4962B3CB59EE">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_44CA376F-464A-4842-B730-408D48B8C419">
+          <dmn:text>&quot;course&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_0C1EDAB5-6462-432F-855C-15A39F2DFA12">
+          <dmn:text>&quot;how_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_E49DC442-0A2B-4F63-A57D-3BF316D54940">
+          <dmn:text>&quot;how_keyword_course&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_45B2E78F-8A61-4D77-9A62-D3824519EC18">
+        <dmn:inputEntry id="_94E2DB5E-4CAE-4FD6-92A7-57EDF3278319">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BBE5D23B-50BE-4C9E-90F6-0B96982A4C5E">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_176F0C50-D24D-47C5-A82C-7D6795CD241E">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F10733AD-C38F-41D4-BC11-ED4C546D544D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_BE07C293-A537-4653-B320-31391EF11388">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2E7C6228-DE11-4400-85AA-1F483BADC05B">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6F7D9EF3-1279-45A0-959D-F9613CE756D7">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_08F74F51-D5FB-4A9A-9CBF-56BEA0EA7456">
+          <dmn:text>&quot;facilities&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_FF1028D2-2326-4935-A252-44F440FE302F">
+          <dmn:text>&quot;how_facilities&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_7353A2D2-8E6B-4958-837D-D16AAD326BB5">
+          <dmn:text>&quot;how_keyword_facilities&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_BA6B1F5F-D7A7-45A0-80A8-E42F90C1002D">
+        <dmn:inputEntry id="_B573F4D8-F1AF-4013-A909-AD4B4DC2BE05">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B72E2955-17B7-4DF8-9FF8-E0FC319D3490">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E75D88C9-923D-4B5D-B004-15ED1387BA8E">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1F45C220-C774-45A6-80EF-FD7166AB22C3">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_431D3EA7-61CB-461B-A57C-E4628F5D4CBF">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_31D2B00B-D801-41B7-9DD5-CFC1BA37604C">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_47E06306-8B6B-4B44-9EAD-6D11AE0671FD">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A0CEC8AC-A3E2-45CA-925F-EC59B2A17F80">
+          <dmn:text>&quot;fee&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_4CBE4CBA-521C-47ED-9755-869179656E02">
+          <dmn:text>&quot;how_fee&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_312ADDF5-A78C-44A5-AC58-2F1664BDB9E9">
+          <dmn:text>&quot;how_keyword_fee&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_C223ABAC-7659-4109-AB0E-FFD74FCA0910">
+        <dmn:inputEntry id="_79FC4FAA-D10C-4032-9AD9-A00B819461D2">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5C041F04-2086-4334-90E7-EC22FFC51023">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_29399204-9E3A-4EBD-A5C4-301AFDC75AAC">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_31E985FD-5100-493B-B912-ED94B65F3376">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5BC7FA56-A69B-4A4E-BC6A-2128C990740B">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5307242D-BC95-436E-BBB7-687ABAB6D46E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_59743536-AD88-4459-87DE-B16E77B4E8E8">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_818D62BD-C20B-4606-8292-15BC4D9ACE4B">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_E9A63A7D-E733-4AD1-8FFC-90F0651E560B">
+          <dmn:text>&quot;how_major_guidance&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_89838935-5481-47EE-987E-0C57DD7A2730">
+          <dmn:text>&quot;how_keyword_major_guidance&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_072C7D94-55F7-4586-A5FE-654FB5D5D400">
+        <dmn:inputEntry id="_4D7B613B-22FB-4568-8A8B-6BFDEF2071E8">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_48B39A56-EE88-4A07-9A6D-24E267D359F0">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_67994CE3-361F-4E5B-8F7C-225C5DDF56ED">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2DC70F25-3528-4B90-BA64-8F4F0D051DF7">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_01699715-02DD-4F6D-AAAC-1EEE177F5EBC">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_959EE362-4E8A-4B3F-8D1F-C699807A739E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6DAF6DA9-765F-4780-950C-C6C9E623B7F1">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C619F3E2-16A1-4F95-B9DE-D1C3F940B9B8">
+          <dmn:text>&quot;student_life&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_D487060D-6EF8-4B34-A36F-1594897AFED7">
+          <dmn:text>&quot;how_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_EFE925E8-83C5-4D7E-91F1-471CC76D7187">
+          <dmn:text>&quot;how_keyword_student_life&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_9301155B-55A7-44F4-8A8D-13AF4CA3E614">
+        <dmn:inputEntry id="_324DF14E-5D4A-4B55-9A74-361642CDF607">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_16E17079-8043-4916-9F12-4972CBD511A3">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5F2EF6E2-233C-467B-AF9E-6B5482C4DB77">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8D7B5DD7-4C90-4757-8480-6FE0C4D84E00">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6FAEA934-7C69-4CDC-9390-07D3B5CD3709">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F8E8C242-FFFE-4C6E-BA1C-700DC9AA61ED">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AFCD5A4D-C63B-44E8-9BD9-A2DFC53A8A97">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_89D1EF09-0C31-43D2-B2BF-8B0B97458A3B">
+          <dmn:text>&quot;career_position&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_B19E1D3A-519A-4A1B-A793-977BC8519764">
+          <dmn:text>&quot;how_career_position&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_6118180B-B96B-40ED-939F-446D42D4FCE7">
+          <dmn:text>&quot;how_keyword_career_position&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_996A83DD-90CE-40A7-9C5B-495B22ADCF8D">
+        <dmn:inputEntry id="_DBA68E94-C69E-455D-BAD7-38A95275E0CA">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A8D3055B-B860-4114-8494-56F5BB2EDF70">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_16E3C0D6-CD7B-4117-A761-80CB97022ECE">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7EDF3676-88AA-4F79-BC08-226A990ECE5E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8121A843-6190-4F17-A3D2-4FEDD0C0283C">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D1F7008F-AF40-4753-8160-0E263D606A2F">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B8E95CBE-55A8-483C-8D98-E0C1AC2D5924">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_162133A2-C664-4135-ACC9-4DE45A6EC129">
+          <dmn:text>&quot;skill&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_562CDDB6-3F91-4A17-BCC5-A83FBE9E9CA9">
+          <dmn:text>&quot;how_skill_training&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_914196E3-FB76-4740-B090-B63C63A5FAA5">
+          <dmn:text>&quot;how_keyword_skill_training&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_8B57A5D8-84B7-4AC1-9206-8BB12AEA5E1E">
+        <dmn:inputEntry id="_37DC969C-4D1E-4515-9D67-E70082A65D9E">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_5B489967-CB94-457F-8A7E-4B146BE784DE">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_27CC0859-4E5B-47BA-B419-BF969CB82566">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0BC4DB76-9450-492D-B659-ECB258DE9AF1">
+          <dmn:text>&quot;career_path&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_63F04471-4260-4626-AE5C-30B4510E354A">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_019639C0-464C-4F6F-B61B-567B23FB619E">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_505D7DE0-ECFD-4210-8CF2-D62F5B068A53">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_D7BDA507-2BD4-4DA5-A72C-D650BE6FC60E">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_292DBFCA-3103-4510-BE0D-1AF5673F7E99">
+          <dmn:text>&quot;how_major_to_career_path&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_58F22906-18C0-4484-90CE-4A46D1D8A12C">
+          <dmn:text>&quot;how_keyword_major_to_career_path&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_40494E3E-0FAD-4E78-9C79-752F05516479">
+        <dmn:inputEntry id="_189862D6-4399-40E1-AF01-C4821FAF2BF1">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_58263D0B-D3BF-4D84-BF59-84FD4118A6BA">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6F940BD7-5E20-401C-96CB-A005E1CA64A9">
+          <dmn:text>&quot;unknown&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_61565123-9378-44C7-AF5A-F11E994A5F16">
+          <dmn:text>&quot;major&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E2401A6A-945B-4029-A901-460DAE2D0703">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8741B6D3-B203-41EA-A56B-D26F8498D58D">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_7AA5A5FE-77F7-4212-B417-B2DCBF608FF5">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3F5C73C8-7E6A-4471-90F6-832A8A967DE8">
+          <dmn:text>&quot;skill&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_5079678C-D1A2-4942-B139-ED4EAA201CB3">
+          <dmn:text>&quot;how_skill_to_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_C3CFDB28-70C9-4BFA-A4B8-1B6AEDE4DCDA">
+          <dmn:text>&quot;how_keyword_skill_to_major&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+    </dmn:decisionTable>
+  </dmn:decision>
+  <dmn:inputData id="in_qtype" name="qtype">
+    <dmn:extensionElements />
+    <dmn:variable id="v_qtype" name="qtype" typeRef="t_qtype" />
+  </dmn:inputData>
+  <dmn:inputData id="in_intent" name="intent">
+    <dmn:extensionElements />
+    <dmn:variable id="v_intent" name="intent" typeRef="t_intent" />
+  </dmn:inputData>
+  <dmn:inputData id="in_topic" name="topic">
+    <dmn:extensionElements />
+    <dmn:variable id="v_topic" name="topic" typeRef="t_topic" />
+  </dmn:inputData>
+  <dmn:inputData id="in_compare_mode" name="compare_mode">
+    <dmn:extensionElements />
+    <dmn:variable id="v_compare_mode" name="compare_mode" typeRef="t_bool" />
+  </dmn:inputData>
+  <dmn:inputData id="in_need_disambig" name="need_disambig">
+    <dmn:extensionElements />
+    <dmn:variable id="v_need_disambig" name="need_disambig" typeRef="t_bool" />
+  </dmn:inputData>
+  <dmn:inputData id="_008D02EF-8A14-4B9A-A0B3-19D5E558478E" name="subtopics">
+    <dmn:extensionElements />
+    <dmn:variable id="_8A2F5B46-DC57-42A6-A7C0-8F19FD262333" name="subtopics" />
+  </dmn:inputData>
+  <dmn:inputData id="_163E58A4-7EFD-4FFE-9085-73254FD6929A" name="potential_type">
+    <dmn:extensionElements />
+    <dmn:variable id="_57C49B56-8854-4F16-8D10-F4939D7CDD06" name="potential_type" />
+  </dmn:inputData>
+  <dmn:inputData id="_4029950B-1A26-42C6-B0C3-3DA770206261" name="time_compare">
+    <dmn:extensionElements />
+    <dmn:variable id="_F7032E64-F1F9-4C97-9362-7F2064487629" name="time_compare" />
+  </dmn:inputData>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="_7B5B4FCE-F5A8-4445-BD69-8C26AA3C0FB7" name="DRG" useAlternativeInputDataShape="false">
+      <di:extension>
+        <kie:ComponentsWidthsExtension>
+          <kie:ComponentWidths dmnElementRef="dt_route_macro">
+            <kie:width>50</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>208</kie:width>
+            <kie:width>151</kie:width>
+            <kie:width>146</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>100</kie:width>
+            <kie:width>219</kie:width>
+            <kie:width>475</kie:width>
+            <kie:width>308</kie:width>
+            <kie:width>233</kie:width>
+          </kie:ComponentWidths>
+        </kie:ComponentsWidthsExtension>
+      </di:extension>
+      <dmndi:DMNShape id="dmnshape-drg-in_qtype" dmnElementRef="in_qtype" isCollapsed="false">
+        <dmndi:DMNStyle id="_BB4C0C0A-8B59-4830-9CB9-640FC7D59586">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="50" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_5E3A1F83-FFB1-462E-B7D8-095D59936355" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_intent" dmnElementRef="in_intent" isCollapsed="false">
+        <dmndi:DMNStyle id="_BBCF29B6-A942-4F9C-AB9D-98E5E4475447">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="225" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_BEF53DBD-60BC-4D10-B8B5-F59A0102911C" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_topic" dmnElementRef="in_topic" isCollapsed="false">
+        <dmndi:DMNStyle id="_596EC5BE-5CB5-4F0D-87AD-E94ABCF7E193">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="400" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_22F3FB9A-CE4D-477C-80A4-C83C1D38418A" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_compare_mode" dmnElementRef="in_compare_mode" isCollapsed="false">
+        <dmndi:DMNStyle id="_5FC37007-A3DA-4911-93EE-A280851D48C5">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="575" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_ECDD6257-0488-46D2-B50B-9BEF4AD82CE3" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-in_need_disambig" dmnElementRef="in_need_disambig" isCollapsed="false">
+        <dmndi:DMNStyle id="_D0B4A250-C47C-418A-8CB6-10C0ECA164B2">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="750" y="225" width="100" height="50" />
+        <dmndi:DMNLabel id="_172ADDC6-CD29-4B02-9D3E-4BAB21619815" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-dec_route_macro" dmnElementRef="dec_route_macro" isCollapsed="false">
+        <dmndi:DMNStyle id="_770B0565-6CDF-4B47-AF11-70141673CC28">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="401" y="19" width="100" height="50" />
+        <dmndi:DMNLabel id="_5E45832E-60AF-4277-9A82-77A5B1E27E06" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-_008D02EF-8A14-4B9A-A0B3-19D5E558478E" dmnElementRef="_008D02EF-8A14-4B9A-A0B3-19D5E558478E" isCollapsed="false">
+        <dmndi:DMNStyle id="_502A631F-A680-4CAE-B745-ECFC9E47EE87">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="155" y="93" width="100" height="50" />
+        <dmndi:DMNLabel id="_9E0AF022-5A44-49D6-A804-8F5F3A5E9D4A" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-_163E58A4-7EFD-4FFE-9085-73254FD6929A" dmnElementRef="_163E58A4-7EFD-4FFE-9085-73254FD6929A" isCollapsed="false">
+        <dmndi:DMNStyle id="_DA41F8D2-2009-4990-9EBC-5468BEC23217">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="906" y="139" width="100" height="50" />
+        <dmndi:DMNLabel id="_56A5C81C-911C-4225-BC04-322120614037" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-drg-_4029950B-1A26-42C6-B0C3-3DA770206261" dmnElementRef="_4029950B-1A26-42C6-B0C3-3DA770206261" isCollapsed="false">
+        <dmndi:DMNStyle id="_10A798A7-407D-4E3D-8FE1-76B2B0796032">
+          <dmndi:FillColor red="255" green="255" blue="255" />
+          <dmndi:StrokeColor red="0" green="0" blue="0" />
+          <dmndi:FontColor red="0" green="0" blue="0" />
+        </dmndi:DMNStyle>
+        <dc:Bounds x="1078" y="67" width="100" height="50" />
+        <dmndi:DMNLabel id="_5C4ECCEB-86F2-4BC1-9D7E-D960BA6BC0D7" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="dmnedge-drg-_68E02F40-BDF3-4DCC-96DE-0BD87332E035" dmnElementRef="_68E02F40-BDF3-4DCC-96DE-0BD87332E035">
+        <di:waypoint x="100" y="250" />
+        <di:waypoint x="451" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_8133E265-9888-40C9-B80A-FDEED05A46DC" dmnElementRef="_8133E265-9888-40C9-B80A-FDEED05A46DC">
+        <di:waypoint x="275" y="250" />
+        <di:waypoint x="451" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_82ABE1C3-80FE-4F44-90DB-0EBF3887178C" dmnElementRef="_82ABE1C3-80FE-4F44-90DB-0EBF3887178C">
+        <di:waypoint x="450" y="250" />
+        <di:waypoint x="451" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_A9DB3C94-4D1A-4BF0-A48A-6C3B13783FF3" dmnElementRef="_A9DB3C94-4D1A-4BF0-A48A-6C3B13783FF3">
+        <di:waypoint x="625" y="250" />
+        <di:waypoint x="451" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_7B834509-FC95-42ED-87E8-282CA64D466D" dmnElementRef="_7B834509-FC95-42ED-87E8-282CA64D466D">
+        <di:waypoint x="800" y="250" />
+        <di:waypoint x="451" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_5D961266-DD31-40C1-8BD2-8825BD23C0F5" dmnElementRef="_5D961266-DD31-40C1-8BD2-8825BD23C0F5">
+        <di:waypoint x="205" y="118" />
+        <di:waypoint x="401" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_08300F2F-A78D-45EF-9E98-FFB1FF631276" dmnElementRef="_08300F2F-A78D-45EF-9E98-FFB1FF631276">
+        <di:waypoint x="956" y="164" />
+        <di:waypoint x="501" y="44" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="dmnedge-drg-_A42D2A79-AEE0-43D6-8643-F014CBE8A0EB" dmnElementRef="_A42D2A79-AEE0-43D6-8643-F014CBE8A0EB">
+        <di:waypoint x="1128" y="92" />
+        <di:waypoint x="501" y="44" />
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</dmn:definitions>

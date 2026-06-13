@@ -1,0 +1,34 @@
+version: "1.0"
+flow_name: "how_career_position"
+description: >
+  Workflow for HOW-CAREER-POSITION questions about how to reach a target role,
+  understand baseline requirements, and plan growth direction.
+
+  Strategy:
+  - Phase 1: Retrieve target role profile and requirement baseline.
+
+  Fallback policy:
+  - If profile depth is limited, keep guidance anchored to available role facts.
+  - Do not infer missing salary/experience bands beyond retrieved evidence.
+
+supported_entity_types: ["CareerPosition"]
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 — ROLE PROFILE BASELINE
+  - step: 1
+    name: "career_info"
+    description: "Fetch core role profile, requirement signals, and workplace context."
+    cypher_template: >
+      MATCH (cp:CareerPosition)
+      WHERE cp.id = $entity_id
+      RETURN cp.name, cp.description, cp.seniority_level,
+             cp.required_experience_years, cp.potential_salary_min,
+             cp.working_environment
+    attributes:
+      - name
+      - description
+      - seniority_level
+      - required_experience_years
+      - potential_salary_min
+      - working_environment

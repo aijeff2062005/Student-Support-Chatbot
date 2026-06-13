@@ -1,0 +1,161 @@
+# Flow cho câu hỏi: Vì sao phải học môn X?
+flow_name: "why_course"
+description: "Query flow để trả lời câu hỏi tại sao phải học một môn học cụ thể"
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - Course
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Thông tin môn học
+  - step: 1
+    name: "course_info"
+    description: "Lấy thông tin chính của môn học"
+    
+    cypher_template: >
+      MATCH (c:Course)
+      WHERE c.id = $entity_id
+      RETURN c
+    
+    attributes:
+      - name
+      - description
+      - objective
+      - theory_credits
+      - practice_credits
+      - theory_hours
+      - practice_hours
+      - knowledge_block
+
+  # Step 2: Chuẩn đầu ra môn học (CLO)
+  - step: 2
+    name: "course_outcomes"
+    description: "Lấy chuẩn đầu ra của môn học"
+    
+    cypher_template: >
+      MATCH (clo:CourseLearningOutcome)-[:APPLIES_TO]->(c:Course)
+      WHERE c.id = $entity_id
+      RETURN clo
+      LIMIT 10
+    
+    attributes:
+      - description
+      - outcome
+      - category
+
+  # Step 3: Môn này là tiên quyết cho những môn nào
+  - step: 3
+    name: "prerequisite_for"
+    description: "Lấy danh sách môn mà môn này là tiên quyết"
+    
+    cypher_template: >
+      MATCH (c:Course)-[:IS_PREREQUISITE_OF]->(next:Course)
+      WHERE c.id = $entity_id
+      RETURN next
+    
+    attributes:
+      - name
+      - description
+
+  # Step 4: Những môn cần học trước môn này
+  - step: 4
+    name: "required_prerequisites"
+    description: "Lấy danh sách môn tiên quyết của môn này"
+    
+    cypher_template: >
+      MATCH (prev:Course)-[:IS_PREREQUISITE_OF]->(c:Course)
+      WHERE c.id = $entity_id
+      RETURN prev
+    
+    attributes:
+      - name
+      - description
+
+  # Step 5: Môn học song hành
+  - step: 5
+    name: "corequisites"
+    description: "Lấy danh sách môn học song hành"
+    
+    cypher_template: >
+      MATCH (c:Course)-[:IS_COREQUISITE_PRECEDING]->(co:Course)
+      WHERE c.id = $entity_id
+      RETURN co
+    
+    attributes:
+      - name
+      - description
+
+  # Step 6: Thuộc chương trình đào tạo nào
+  - step: 6
+    name: "belongs_to_programs"
+    description: "Lấy các chương trình có môn học này"
+    
+    cypher_template: >
+      MATCH (ap:AcademicProgram)-[r:HAS_COURSE]->(c:Course)
+      WHERE c.id = $entity_id
+      RETURN ap, r.course_type as course_type
+      LIMIT 5
+    
+    attributes:
+      - name
+      - description
+      - career_opportunities
+      - teaching_learning_method
+      - course_type
+
+  # Step 7: Đóng góp vào PLO nào
+  - step: 7
+    name: "contributes_to_plo"
+    description: "Môn học đóng góp vào chuẩn đầu ra chương trình nào"
+    
+    cypher_template: >
+      MATCH (ap:AcademicProgram)-[:HAS_COURSE]->(c:Course)
+      WHERE c.id = $entity_id
+      MATCH (ap)-[:HAS_PLO]->(plo:ProgramLearningOutcome)
+      RETURN DISTINCT plo
+      LIMIT 10
+    
+    attributes:
+      - name
+      - description
+      - outcome
+      - category
+
+  # Step 8: Ngành liên quan
+  - step: 8
+    name: "related_majors"
+    description: "Lấy ngành liên quan đến môn học này"
+    
+    cypher_template: >
+      MATCH (ap:AcademicProgram)-[:HAS_COURSE]->(c:Course)
+      WHERE c.id = $entity_id
+      MATCH (m)-[:INCLUDES]->(ap)
+      RETURN DISTINCT m
+      LIMIT 3
+    
+    attributes:
+      - name
+      - description
+      - career_opportunities
+
+  # Step 9: Các môn cùng knowledge_block
+  - step: 9
+    name: "same_block_courses"
+    description: "Lấy các môn cùng khối kiến thức"
+    
+    cypher_template: >
+      MATCH (c:Course)
+      WHERE c.id = $entity_id
+      WITH c.knowledge_block as kb
+      MATCH (other:Course)
+      WHERE other.knowledge_block = kb AND other.id <> $entity_id
+      RETURN other
+      LIMIT 5
+    
+    attributes:
+      - name
+
+# Mapping cho entity_type
+entity_type_mapping:
+  Course: "Môn học"

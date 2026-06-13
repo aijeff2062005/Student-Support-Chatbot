@@ -1,0 +1,163 @@
+# Flow cho câu hỏi: Vì sao nên chọn Khoa X?
+flow_name: "why_faculty"
+description: "Query flow để trả lời câu hỏi tại sao nên chọn học ở một khoa cụ thể"
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - Faculty
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Thông tin khoa
+  - step: 1
+    name: "faculty_info"
+    description: "Lấy thông tin chính của khoa"
+    
+    cypher_template: >
+      MATCH (f:Faculty)
+      WHERE f.id = $entity_id
+      RETURN f
+    
+    attributes:
+      - name
+      - description
+      - code
+
+  # Step 2: Các ngành thuộc khoa
+  - step: 2
+    name: "majors"
+    description: "Lấy danh sách ngành thuộc khoa"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)
+      WHERE f.id = $entity_id
+      RETURN m
+    
+    attributes:
+      - name
+      - description
+      - career_opportunities
+      - graduate_employment_rate
+      - graduation_rate
+      - objective
+      - key_points
+
+  # Step 3: Giảng viên
+  - step: 3
+    name: "lecturers"
+    description: "Lấy danh sách giảng viên"
+    
+    cypher_template: >
+      MATCH (p:Person)-[r:WORKS_IN]->(f:Faculty)
+      WHERE f.id = $entity_id
+      RETURN p, r.role as role
+      LIMIT 10
+
+    attributes:
+      - name
+      - degree
+      - academic_rank
+      - role
+
+  # Step 4: Đối tác hợp tác
+  - step: 4
+    name: "partners"
+    description: "Lấy đối tác hợp tác với khoa"
+    
+    cypher_template: >
+      MATCH (p:CollaborativePartner)-[:COLLABS_WITH]->(f:Faculty)
+      WHERE f.id = $entity_id
+      RETURN p
+      LIMIT 10
+
+    attributes:
+      - name
+      - description
+      - domains
+
+  # Step 5: Câu lạc bộ thuộc khoa
+  - step: 5
+    name: "clubs"
+    description: "Lấy CLB thuộc khoa"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:MANAGES]->(c:Club)
+      WHERE f.id = $entity_id
+      RETURN c
+    
+    attributes:
+      - name
+      - description
+      - fanpage
+
+  # Step 6: Dịch vụ của khoa
+  - step: 6
+    name: "services"
+    description: "Lấy dịch vụ khoa cung cấp"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:MANAGES]->(s:Service)
+      WHERE f.id = $entity_id
+      RETURN s
+      LIMIT 10
+    
+    attributes:
+      - name
+
+  # Step 7: Xu hướng thị trường của các ngành thuộc khoa
+  - step: 7
+    name: "market_trends"
+    description: "Lấy xu hướng thị trường liên quan"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)
+      WHERE f.id = $entity_id
+      MATCH (mt:MarketTrend)-[:APPLIES_TO]->(m)
+      RETURN DISTINCT mt
+      LIMIT 10
+
+    attributes:
+      - name
+      - description
+      - demand_size
+      - growth_rate
+      - demand_gap
+      - domains
+
+  # Step 8: Chuyên ngành (nếu có)
+  - step: 8
+    name: "specializations"
+    description: "Lấy các chuyên ngành thuộc các ngành của khoa"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:TRAINS]->(m:Major)-[:INCLUDES]->(s:Specialization)
+      WHERE f.id = $entity_id
+      RETURN DISTINCT s
+    
+    attributes:
+      - name
+      - description
+      - career_opportunities
+      - key_points
+
+  # Step 9: Hoạt động của CLB thuộc khoa
+  - step: 9
+    name: "activities"
+    description: "Lấy hoạt động của các CLB thuộc khoa"
+    
+    cypher_template: >
+      MATCH (f:Faculty)-[:MANAGES]->(c:Club)
+      WHERE f.id = $entity_id
+      MATCH (a:Activity)-[:ORGANIZED_BY]->(c)
+      RETURN a
+      LIMIT 10
+
+    attributes:
+      - name
+      - description
+      - start_date
+      - end_date
+
+# Mapping cho entity_type
+entity_type_mapping:
+  Faculty: "Khoa"

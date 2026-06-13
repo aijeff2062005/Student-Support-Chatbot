@@ -1,0 +1,157 @@
+version: "1.0"
+flow_name: "what_major_constraint_list"
+description: >
+  Workflow for WHAT major/specialization constraint-list queries.
+  Handles questions like "ngành/chuyên ngành nào có A/B/C/D" by treating
+  Major and Specialization as peer result nodes, while extending attribute
+  lookup through directly related AcademicProgram nodes when needed.
+
+  Strategy:
+  - Resolve the context/scope entity.
+  - Build a Major + Specialization candidate pool from that scope.
+  - Expand candidate search ids to include connected AcademicProgram nodes.
+  - Resolve canonical academic attribute keys when possible.
+  - Search exact attribute keys and raw semantic/value terms.
+  - Join matches back to the Major/Specialization candidate, preserving
+    AcademicProgram data when the query is scoped to an exact major/specialization
+    or when the matched attribute came from an AcademicProgram.
+  - Return compact candidate evidence for the response layer to judge.
+
+steps:
+  - step_id: "P1_S1"
+    name: "resolve_context_entities"
+    description: "Resolve the scope for major/specialization constraint lookup."
+    module: "dbs.milvus_helper"
+    function: "search_entity_by_name"
+    inputs:
+      entity_name: "$input.context_entities[*].text"
+      entity_type: "$input.context_entities[*].label"
+      keywords: "$input.keywords"
+      top_k: 3
+      time: "$input.time"
+    outputs: "context_found_list"
+
+  - step_id: "P2_S1"
+    name: "build_major_spec_candidate_pool"
+    description: "Build candidate Major and Specialization nodes as peer results."
+    module: "services.what_major_constraint_list"
+    function: "build_major_spec_candidate_pool"
+    inputs:
+      context_found_list: "$state.context_found_list"
+      target_topics: "$input.count_enumerate_targets"
+      time: "$input.time"
+      display_limit: 5
+      start_index: "$input.start_index"
+    outputs: "candidate_pool"
+
+  - step_id: "P2_S2"
+    name: "build_academic_program_search_scope"
+    description: "Attach AcademicProgram search ids and back-reference mapping to each candidate."
+    condition: "$state.candidate_pool is not None and $state.candidate_pool.total > 0"
+    module: "services.what_major_constraint_list"
+    function: "build_academic_program_search_scope"
+    inputs:
+      candidate_pool: "$state.candidate_pool"
+      time: "$input.time"
+    outputs: "academic_program_search_scope"
+
+  - step_id: "P3_S1"
+    name: "resolve_constraint_attribute_definitions"
+    description: "Resolve query words through knowledge_attribute_definitions."
+    module: "services.what_relation_count_list_constraint"
+    function: "search_constraint_attribute_definitions"
+    inputs:
+      keywords: "$input.keyword_attributes"
+      label: null
+      top_k: 10
+      similarity_threshold: 0.6
+    outputs: "resolved_attr_defs"
+
+  - step_id: "P3_S1B"
+    name: "filter_major_node_attribute_definitions"
+    description: "Keep node attributes for Major, Specialization, and AcademicProgram."
+    condition: "$state.resolved_attr_defs is not None and len($state.resolved_attr_defs) > 0"
+    module: "services.what_relation_count_list_constraint"
+    function: "filter_attribute_definitions"
+    inputs:
+      resolved_attr_defs: "$state.resolved_attr_defs"
+      definition_kind: "node"
+      allowed_labels:
+        - "Major"
+        - "Specialization"
+        - "AcademicProgram"
+    outputs: "major_constraint_attribute_defs"
+
+  - step_id: "P3_S1C"
+    name: "extract_major_constraint_attribute_names"
+    description: "Extract canonical attribute names from resolved node definitions."
+    module: "services.what_relation_count_list_constraint"
+    function: "attribute_names_from_definitions"
+    inputs:
+      resolved_attr_defs: "$state.major_constraint_attribute_defs"
+    outputs: "major_constraint_attribute_keys"
+
+  - step_id: "P3_S2"
+    name: "build_major_constraint_raw_queries"
+    description: "Build semantic/value search queries after removing generic target words."
+    module: "services.what_major_constraint_list"
+    function: "build_major_constraint_raw_queries"
+    inputs:
+      keywords: "$input.keywords"
+      keyword_attributes: "$input.keyword_attributes"
+      resolved_attribute_keys: "$state.major_constraint_attribute_keys"
+    outputs: "major_constraint_raw_queries"
+
+  - step_id: "P4_S1"
+    name: "search_exact_academic_attributes"
+    description: "Fetch exact canonical attribute values for candidate and AcademicProgram nodes."
+    condition: "$state.academic_program_search_scope is not None and $state.major_constraint_attribute_keys is not None and len($state.major_constraint_attribute_keys) > 0"
+    module: "dbs.milvus_helper"
+    function: "search_entity_attributes_hybrid"
+    inputs:
+      node_ids: "$state.academic_program_search_scope.search_node_ids"
+      queries: "$state.major_constraint_attribute_keys"
+      top_k: 3
+      similarity_threshold: 0.75
+      prefer_exact_name_query: true
+    outputs: "exact_attr_matches"
+
+  - step_id: "P4_S2"
+    name: "search_raw_major_constraint_terms"
+    description: "Search raw semantic/value terms to identify which candidates satisfy the constraint."
+    condition: "$state.academic_program_search_scope is not None and $state.major_constraint_raw_queries is not None and len($state.major_constraint_raw_queries) > 0 and ($state.exact_attr_matches is None or len($state.exact_attr_matches) == 0)"
+    module: "dbs.milvus_helper"
+    function: "search_entity_attributes_hybrid"
+    inputs:
+      node_ids: "$state.academic_program_search_scope.search_node_ids"
+      queries: "$state.major_constraint_raw_queries"
+      top_k: 3
+      similarity_threshold: 0.55
+    outputs: "raw_attr_matches"
+
+  - step_id: "P5_S1"
+    name: "build_major_constraint_list_results"
+    description: "Join attribute matches back to Major/Specialization candidates."
+    condition: "$state.candidate_pool is not None and $state.academic_program_search_scope is not None"
+    module: "services.what_major_constraint_list"
+    function: "build_major_constraint_list_results"
+    inputs:
+      candidate_pool: "$state.candidate_pool"
+      search_scope: "$state.academic_program_search_scope"
+      exact_attr_matches: "$state.exact_attr_matches"
+      raw_attr_matches: "$state.raw_attr_matches"
+      keywords: "$input.keywords"
+      keyword_attributes: "$input.keyword_attributes"
+      resolved_attribute_keys: "$state.major_constraint_attribute_keys"
+    outputs: "list_results"
+
+  - step_id: "P7_S1"
+    name: "crawled_data_search"
+    description: "Search crawled data when no major/specialization constraint result is available."
+    condition: "$state.list_results is None or ($state.list_results is not None and $state.list_results.total == 0)"
+    module: "dbs.milvus_helper"
+    function: "search_crawled_data"
+    inputs:
+      question: "$input.original_query"
+      top_k: 5
+    outputs: "crawled_data_results"

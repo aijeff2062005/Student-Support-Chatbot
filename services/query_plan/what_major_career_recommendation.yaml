@@ -1,0 +1,94 @@
+version: "1.0"
+flow_name: "what_major_career_recommendation"
+description: >
+  Workflow for career-oriented WHAT-LIST major recommendation queries such as:
+  "muon lam cong viec A thi hoc nganh gi", "domain B co nganh nao", or
+  "truong co nganh nao de lam Z".
+
+  Strategy:
+  - Phase 1: Search the dedicated career_recommendation collection using extracted keywords.
+  - Phase 2: Resolve the returned major names to canonical graph nodes.
+  - Phase 3: Enrich resolved majors with graph attributes for grounded recommendation wording.
+  - Phase 4: Build list_results in the canonical WHAT collection shape.
+  - Phase 5: Fall back to crawled data only when no structured recommendation can be built.
+
+steps:
+  - step_id: "P1_S1"
+    name: "search_career_recommendation_candidates"
+    description: "Search semantic major recommendations from the dedicated career_recommendation collection."
+    module: "dbs.career_recommendation_ops"
+    function: "search_career_recommendation_candidates"
+    inputs:
+      original_query: "$input.original_query"
+      keywords: "$input.keywords"
+      top_k: 3
+      threshold: 0.3
+      potential_majors: "$input.potential_majors"
+    outputs: "career_recommendation_candidates"
+
+  - step_id: "P1_S2"
+    name: "resolve_career_recommendation_candidates"
+    description: "Resolve recommended major names to canonical graph entities."
+    condition: "$state.career_recommendation_candidates is not None and len($state.career_recommendation_candidates) > 0"
+    module: "dbs.career_recommendation_ops"
+    function: "resolve_career_recommendation_candidates"
+    inputs:
+      candidates: "$state.career_recommendation_candidates"
+      time: "$input.time"
+    outputs: "resolved_recommendation_candidates"
+
+  - step_id: "P2_S1"
+    name: "fetch_recommended_major_attributes"
+    description: "Fetch graph attributes for resolved recommended majors."
+    condition: "$state.resolved_recommendation_candidates is not None and len($state.resolved_recommendation_candidates) > 0"
+    module: "tools.QA.services.neo4j_service"
+    class: "Neo4jService"
+    method: "get_node_attributes_for_query_plan"
+    inputs:
+      node_ids: "$state.resolved_recommendation_candidates[*].node_id"
+      attribute_keys:
+        - "description"
+        - "career_opportunities"
+        - "objective"
+        - "key_points"
+      time: "$input.time"
+    outputs: "recommended_major_attributes"
+
+  - step_id: "P3_S1"
+    name: "build_career_recommendation_list_results"
+    description: "Build canonical list_results for the recommendation response path."
+    condition: "$state.resolved_recommendation_candidates is not None and len($state.resolved_recommendation_candidates) > 0"
+    module: "dbs.career_recommendation_ops"
+    function: "build_career_recommendation_list_results"
+    inputs:
+      candidates: "$state.career_recommendation_candidates"
+      resolved_candidates: "$state.resolved_recommendation_candidates"
+      attribute_map: "$state.recommended_major_attributes"
+      original_query: "$input.original_query"
+      user_keywords: "$input.keywords"
+      target_topics: "$input.count_enumerate_targets"
+      display_limit: 3
+      start_index: "$input.start_index"
+    outputs: "list_results"
+
+#  - step_id: "P4_S1"
+#    name: "crawled_data_search"
+#    description: "Search crawled data when recommendation retrieval cannot build structured results."
+#    condition: "$state.list_results is None or ($state.list_results is not None and $state.list_results.total == 0)"
+#    module: "dbs.milvus_helper"
+#    function: "search_crawled_data"
+#    inputs:
+#      question: "$input.original_query"
+#      top_k: 5
+#    outputs: "crawled_data_results"
+#
+#  - step_id: "P4_S2"
+#    name: "generate_crawled_data"
+#    description: "Generate and cache crawled data when both recommendation and crawled search are empty."
+#    condition: "($state.list_results is None or ($state.list_results is not None and $state.list_results.total == 0)) and not $state.crawled_data_results"
+#    module: "dbs.milvus_helper"
+#    function: "generate_and_save_crawled_data"
+#    inputs:
+#      question: "$input.original_query"
+#      collection_name: "knowledge_university_crawled_data"
+#    outputs: "crawled_data_results"

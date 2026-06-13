@@ -1,0 +1,286 @@
+version: "1.0"
+flow_name: "how_admission"
+description: >
+  Workflow for HOW-ADMISSION questions about how to apply, which admission method
+  to choose, and how to complete the registration process.
+
+  Strategy:
+  - Phase 1: Resolve policy-level procedural context for the asked scope/entity.
+  - Phase 2: Retrieve actionable method evidence (methods + combinations).
+  - Phase 3: Retrieve competitiveness/supporting constraints (quota/score) to help
+    users choose the right path.
+
+  Fallback policy:
+  - Prioritize graph-structured admission evidence under effective-time filters.
+  - If some sections are missing, answer with available structured sections only.
+  - Crawled/general context is supplementary and must not override graph policy facts.
+
+supported_entity_types:
+  - Major
+  - AcademicProgram
+  - AdmissionMethod
+  - AdmissionCombination
+  - AdmissionPolicy
+  - University
+requires_entity_id: true
+
+traversal_steps:
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 1 — POLICY & PROCEDURE BASELINE
+  # Establish the authoritative admission policy context first.
+  # ════════════════════════════════════════════════════════════════
+
+  - step: 1
+    name: "admission_policy"
+    description: "Fetch admission policy/procedure fields scoped by entity and effective-time constraints."
+    cypher_template: >
+      MATCH (n)
+      WHERE n.id = $entity_id
+      CALL (n) {
+        WITH n
+        WITH n WHERE n:Major
+        MATCH (n)<-[r:APPLIES_TO]-(am:AdmissionMethod)-[:BELONGS_TO]->(p:AdmissionPolicy)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+          AND ($effective_from IS NULL OR p.effective_to IS NULL OR datetime($effective_from) <= datetime(p.effective_to))
+          AND ($effective_to IS NULL OR p.effective_from IS NULL OR datetime($effective_to) >= datetime(p.effective_from))
+        RETURN p
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionMethod
+        MATCH (n)-[:BELONGS_TO]->(p:AdmissionPolicy)
+        WHERE ($effective_from IS NULL OR p.effective_to IS NULL OR datetime($effective_from) <= datetime(p.effective_to))
+          AND ($effective_to IS NULL OR p.effective_from IS NULL OR datetime($effective_to) >= datetime(p.effective_from))
+        RETURN p
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionCombination
+        MATCH (n)<-[:USES_COMBINATION]-(am:AdmissionMethod)-[:BELONGS_TO]->(p:AdmissionPolicy)
+        WHERE ($effective_from IS NULL OR p.effective_to IS NULL OR datetime($effective_from) <= datetime(p.effective_to))
+          AND ($effective_to IS NULL OR p.effective_from IS NULL OR datetime($effective_to) >= datetime(p.effective_from))
+        RETURN p
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionPolicy
+        RETURN n AS p
+        UNION
+        WITH n
+        WITH n WHERE n:University
+        MATCH (p:AdmissionPolicy)
+        WHERE ($effective_from IS NULL OR p.effective_to IS NULL OR datetime($effective_from) <= datetime(p.effective_to))
+          AND ($effective_to IS NULL OR p.effective_from IS NULL OR datetime($effective_to) >= datetime(p.effective_from))
+        RETURN p
+      }
+      WITH DISTINCT p
+      WHERE p IS NOT NULL
+      RETURN p.name,
+             p.applicant_commitment,
+             p.bonus_point_policy,
+             p.priority_policy,
+             p.target_applicants,
+             p.registration_procedure,
+             p.admission_portal,
+             p.registration_method,
+             p.admission_hotline,
+             p.additional_admission_conditions,
+             p.english_score_conversion,
+             p.fee_information,
+             p.major_streaming_criteria
+      ORDER BY coalesce(p.effective_from, '1900-01-01T00:00:00Z') DESC
+      LIMIT 1
+    attributes:
+      - name
+      - applicant_commitment
+      - bonus_point_policy
+      - priority_policy
+      - target_applicants
+      - registration_procedure
+      - admission_portal
+      - registration_method
+      - admission_hotline
+      - additional_admission_conditions
+      - english_score_conversion
+      - fee_information
+      - major_streaming_criteria
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 2 — METHOD OPTIONS & EXECUTION PATHS
+  # Gather method-specific evidence users need to choose a path.
+  # ════════════════════════════════════════════════════════════════
+
+  - step: 2
+    name: "admission_methods"
+    description: "Fetch admission methods relevant to the resolved scope/entity."
+    cypher_template: >
+      MATCH (n)
+      WHERE n.id = $entity_id
+      CALL (n) {
+        WITH n
+        WITH n WHERE n:Major
+        MATCH (n)<-[r:APPLIES_TO]-(am:AdmissionMethod)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+        RETURN am
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionMethod
+        RETURN n AS am
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionCombination
+        MATCH (n)<-[:USES_COMBINATION]-(am:AdmissionMethod)
+        RETURN am
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionPolicy
+        MATCH (n)<-[:BELONGS_TO]-(am:AdmissionMethod)
+        RETURN am
+        UNION
+        WITH n
+        WITH n WHERE n:University
+        MATCH (p:AdmissionPolicy)<-[:BELONGS_TO]-(am:AdmissionMethod)
+        WHERE ($effective_from IS NULL OR p.effective_to IS NULL OR datetime($effective_from) <= datetime(p.effective_to))
+          AND ($effective_to IS NULL OR p.effective_from IS NULL OR datetime($effective_to) >= datetime(p.effective_from))
+        RETURN am
+      }
+      WITH DISTINCT am
+      WHERE am IS NOT NULL
+      RETURN am.name AS name, am.selection_method AS selection_method
+      LIMIT 20
+    attributes:
+      - name
+      - selection_method
+
+  - step: 3
+    name: "admission_combinations"
+    description: "Fetch admission combinations linked to the relevant method/context."
+    cypher_template: >
+      MATCH (n)
+      WHERE n.id = $entity_id
+      CALL (n) {
+        WITH n
+        WITH n WHERE n:Major
+        MATCH (n)<-[r:APPLIES_TO]-(am:AdmissionMethod)-[:USES_COMBINATION]->(ac:AdmissionCombination)-[rc:APPLIES_TO]->(n)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+          AND ($effective_from IS NULL OR rc.effective_to IS NULL OR datetime($effective_from) <= datetime(rc.effective_to))
+          AND ($effective_to IS NULL OR rc.effective_from IS NULL OR datetime($effective_to) >= datetime(rc.effective_from))
+        RETURN ac
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionMethod
+        MATCH (n)-[:USES_COMBINATION]->(ac:AdmissionCombination)
+        RETURN ac
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionCombination
+        RETURN n AS ac
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionPolicy
+        MATCH (n)<-[:BELONGS_TO]-(am:AdmissionMethod)-[:USES_COMBINATION]->(ac:AdmissionCombination)
+        RETURN ac
+        UNION
+        WITH n
+        WITH n WHERE n:University
+        MATCH (:AdmissionMethod)-[:USES_COMBINATION]->(ac:AdmissionCombination)
+        RETURN ac
+      }
+      WITH DISTINCT ac
+      WHERE ac IS NOT NULL
+      RETURN ac.code AS code, ac.combination_detail AS combination_detail, ac.name AS name
+      LIMIT 25
+    attributes:
+      - code
+      - combination_detail
+      - name
+
+  # ════════════════════════════════════════════════════════════════
+  # PHASE 3 — COMPETITIVENESS SUPPORT (OPTIONAL)
+  # Add quota/score references when available to guide decision quality.
+  # ════════════════════════════════════════════════════════════════
+
+  - step: 4
+    name: "major_quotas_scores"
+    description: "Fetch quota/cutoff/estimated-score evidence under effective-time constraints when available."
+    cypher_template: >
+      MATCH (n)
+      WHERE n.id = $entity_id
+      CALL (n) {
+        WITH n
+        WITH n WHERE n:Major
+        MATCH (n)<-[r:APPLIES_TO]-(am:AdmissionMethod)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+        RETURN n.name AS major_name,
+               am.name AS method_name,
+               r.cutoff_score AS cutoff_score,
+               r.quota AS quota,
+               r.estimated_score AS estimated_score,
+               r.selection_method AS selection_method
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionMethod
+        MATCH (n)-[r:APPLIES_TO]->(m:Major)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+        RETURN m.name AS major_name,
+               n.name AS method_name,
+               r.cutoff_score AS cutoff_score,
+               r.quota AS quota,
+               r.estimated_score AS estimated_score,
+               r.selection_method AS selection_method
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionCombination
+        MATCH (n)<-[:USES_COMBINATION]-(am:AdmissionMethod)-[r:APPLIES_TO]->(m:Major)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+        RETURN m.name AS major_name,
+               am.name AS method_name,
+               r.cutoff_score AS cutoff_score,
+               r.quota AS quota,
+               r.estimated_score AS estimated_score,
+               r.selection_method AS selection_method
+        UNION
+        WITH n
+        WITH n WHERE n:AdmissionPolicy
+        MATCH (n)<-[:BELONGS_TO]-(am:AdmissionMethod)-[r:APPLIES_TO]->(m:Major)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+        RETURN m.name AS major_name,
+               am.name AS method_name,
+               r.cutoff_score AS cutoff_score,
+               r.quota AS quota,
+               r.estimated_score AS estimated_score,
+               r.selection_method AS selection_method
+        UNION
+        WITH n
+        WITH n WHERE n:University
+        MATCH (am:AdmissionMethod)-[r:APPLIES_TO]->(m:Major)
+        WHERE ($effective_from IS NULL OR r.effective_to IS NULL OR datetime($effective_from) <= datetime(r.effective_to))
+          AND ($effective_to IS NULL OR r.effective_from IS NULL OR datetime($effective_to) >= datetime(r.effective_from))
+        RETURN m.name AS major_name,
+               am.name AS method_name,
+               r.cutoff_score AS cutoff_score,
+               r.quota AS quota,
+               r.estimated_score AS estimated_score,
+               r.selection_method AS selection_method
+      }
+      WITH major_name, method_name, cutoff_score, quota, estimated_score, selection_method
+      WHERE major_name IS NOT NULL AND method_name IS NOT NULL
+        AND (cutoff_score IS NOT NULL OR quota IS NOT NULL OR estimated_score IS NOT NULL)
+      RETURN DISTINCT major_name,
+             method_name,
+             cutoff_score,
+             quota,
+             estimated_score,
+             selection_method
+      LIMIT 30
+    attributes:
+      - major_name
+      - method_name
+      - cutoff_score
+      - quota
+      - estimated_score
+      - selection_method

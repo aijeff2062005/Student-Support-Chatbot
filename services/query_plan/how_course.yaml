@@ -1,0 +1,71 @@
+version: "1.0"
+flow_name: "how_course"
+description: >
+  Workflow for HOW-COURSE questions about how to study a course effectively,
+  satisfy prerequisites, and understand outcomes.
+
+  Strategy:
+  - Phase 1: Retrieve course baseline and prerequisite context.
+  - Phase 2: Retrieve expected outcomes and risks.
+  - Phase 3: Retrieve skills taught for practical direction.
+
+  Fallback policy:
+  - Use available structured blocks even when one section is missing.
+  - Never fabricate prerequisites, outcomes, or skills.
+
+supported_entity_types:
+  - Course
+
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 — COURSE BASELINE & PREREQUISITES
+  - step: 1
+    name: "course_details"
+    description: "Fetch core course details including credits and scope description."
+    cypher_template: >
+      MATCH (c:Course)
+      WHERE c.id = $entity_id
+      RETURN c.name, c.theory_credits, c.practice_credits, c.description
+    attributes:
+      - name
+      - theory_credits
+      - practice_credits
+      - description
+
+  - step: 2
+    name: "prerequisites"
+    description: "Fetch prerequisite courses within the same academic program context."
+    cypher_template: >
+      MATCH (pre:Course)-[:IS_PREREQUISITE_OF]->(c:Course)
+      MATCH (c:Course)-[:BELONGS_TO]->(:AcademicProgram)<-[:BELONGS_TO]-(pre:Course)
+      WHERE c.id = $entity_id
+      RETURN pre.name AS prerequisite_name
+    attributes:
+      - prerequisite_name
+
+  # PHASE 2 — LEARNING OUTCOMES & RISKS
+  - step: 3
+    name: "course_outcomes"
+    description: "Fetch course learning outcomes and risk notes."
+    cypher_template: >
+      MATCH (clo:CourseLearningOutcome)-[:APPLIES_TO]->(c:Course)
+      WHERE c.id = $entity_id
+      RETURN clo.outcome, clo.risk, clo.description
+    attributes:
+      - outcome
+      - risk
+      - description
+
+  # PHASE 3 — PRACTICAL SKILLS
+  - step: 4
+    name: "skills_taught"
+    description: "Fetch skills directly taught by the course."
+    cypher_template: >
+      MATCH (c:Course)-[:TEACHES]->(s:Skill)
+      WHERE c.id = $entity_id
+      RETURN s.name, s.description, s.skill_domains
+    attributes:
+      - name
+      - description
+      - skill_domains

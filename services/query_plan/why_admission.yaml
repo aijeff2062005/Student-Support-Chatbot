@@ -1,0 +1,124 @@
+# Flow cho câu hỏi: Vì sao nên xét tuyển (bằng phương thức X)?
+flow_name: "why_admission"
+description: "Query flow để trả lời câu hỏi tại sao nên xét tuyển vào GDU, vì sao có nhiều phương thức, vì sao điểm chuẩn thay đổi..."
+
+# Entity types mà flow này hỗ trợ
+supported_entity_types:
+  - AdmissionPolicy
+  - AdmissionMethod
+
+# Đặc biệt: Flow này KHÔNG cần entity_id vì AdmissionPolicy là toàn cục
+requires_entity_id: false
+
+# Các bước traverse graph
+traversal_steps:
+  # Step 1: Thông tin chính sách tuyển sinh
+  - step: 1
+    name: "admission_policy"
+    description: "Lấy thông tin chính sách tuyển sinh chung"
+    
+    cypher_template: >
+      MATCH (ap:AdmissionPolicy)
+      WHERE {temporal_filter:ap}
+      RETURN ap
+    
+    attributes:
+      - name
+      - registration_procedure
+      - registration_method
+      - target_applicants
+      - fee_information
+      - priority_policy
+      - bonus_point_policy
+      - english_score_conversion
+      - additional_admission_conditions
+      - major_streaming_criteria
+      - applicant_commitment
+      - admission_hotline
+      - admission_portal
+      - effective_from
+      - effective_to
+
+  # Step 2: Các phương thức xét tuyển
+  - step: 2
+    name: "admission_methods"
+    description: "Lấy danh sách các phương thức xét tuyển"
+    
+    cypher_template: >
+      MATCH (am:AdmissionMethod)-[:BELONGS_TO]->(ap:AdmissionPolicy)
+      WHERE {temporal_filter:ap}
+      RETURN am
+    
+    attributes:
+      - name
+      - selection_method
+
+  # Step 3: Các tổ hợp xét tuyển
+  - step: 3
+    name: "admission_combinations"
+    description: "Lấy danh sách tổ hợp môn xét tuyển"
+    
+    cypher_template: >
+      MATCH (am:AdmissionMethod)-[:USES_COMBINATION]->(ac:AdmissionCombination)
+      RETURN DISTINCT ac
+    
+    attributes:
+      - name
+      - combination_detail
+
+  # Step 4: Điểm chuẩn/quota theo ngành (top ngành hot)
+  - step: 4
+    name: "major_admission_info"
+    description: "Lấy thông tin xét tuyển theo ngành"
+    
+    cypher_template: >
+      MATCH (am:AdmissionMethod)-[r:APPLIES_TO]->(m:Major)
+      WHERE {temporal_filter:r}
+      RETURN m.name as major_name, m.code as major_code,
+             r.cutoff_score as cutoff_score, r.quota as quota, 
+             r.estimated_score as estimated_score,
+             am.name as method_name
+      ORDER BY r.quota DESC
+      LIMIT 20
+    
+    attributes:
+      - major_name
+      - cutoff_score
+      - quota
+      - estimated_score
+      - method_name
+
+  # Step 5: Thông tin trường (context)
+  - step: 5
+    name: "university_context"
+    description: "Lấy thông tin chung về trường làm context"
+    
+    cypher_template: >
+      MATCH (u:University)
+      RETURN u
+    
+    attributes:
+      - name
+      - adescription
+
+# Output format hints for LLM
+output_hints:
+  main_topics:
+    - "Quy trình đăng ký xét tuyển"
+    - "Các phương thức xét tuyển (học bạ, ĐGNL, điểm thi THPT)"
+    - "Tổ hợp môn xét tuyển"
+    - "Điểm chuẩn các ngành"
+    - "Chính sách ưu tiên/cộng điểm"
+    - "Lệ phí và thủ tục đăng ký"
+  
+  argument_structure:
+    claim: "Lý do nên xét tuyển vào GDU / bằng phương thức X"
+    causes:
+      - "Đa dạng phương thức xét tuyển linh hoạt"
+      - "Quy trình đăng ký đơn giản, online"
+      - "Chính sách ưu tiên hấp dẫn"
+      - "Điểm chuẩn hợp lý"
+    capabilities:
+      - "Nhiều ngành học để lựa chọn"
+      - "Hỗ trợ tư vấn tuyển sinh"
+    direction: "Hướng dẫn cụ thể đăng ký"
