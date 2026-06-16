@@ -803,6 +803,7 @@ class QueryOrchestrator:
             "how_course": (HowIntent.COURSE, HowAnswerKind.ROADMAP),
             "how_course_roadmap": (HowIntent.COURSE, HowAnswerKind.ROADMAP),
             "how_fee": (HowIntent.FEE, HowAnswerKind.PROCEDURE),
+            "how_procedure_policy": (HowIntent.POLICY, HowAnswerKind.PROCEDURE),
             "how_student_life": (HowIntent.STUDENT_LIFE, HowAnswerKind.PROCEDURE),
             "how_facilities": (HowIntent.FACILITIES, HowAnswerKind.PROCEDURE),
             "how_campus_contact": (HowIntent.CAMPUS_CONTACT, HowAnswerKind.CONTACT),
@@ -890,6 +891,24 @@ class QueryOrchestrator:
                 "tuition_policy": tuition_policy,
                 "scholarship_policy": scholarship_policy,
                 "admission_fee_info": fee_references,
+            }
+        elif flow_name == "how_procedure_policy":
+            policy_overview = self._extract_how_step_rows(all_flow_results, "policy_overview")
+            policy_compliance = self._extract_how_step_rows(all_flow_results, "policy_compliance")
+            policy_process = self._extract_how_step_rows(all_flow_results, "policy_process")
+            policy_penalty = self._extract_how_step_rows(all_flow_results, "policy_penalty")
+            answer_data = {
+                "scope_entity": scope_entity,
+                "policy": policy_overview[0] if policy_overview else None,
+                "compliance": policy_compliance[0] if policy_compliance else None,
+                "process": policy_process[0] if policy_process else None,
+                "penalty": policy_penalty[0] if policy_penalty else None,
+            }
+            structured_evidence = {
+                "policy_overview": policy_overview,
+                "policy_compliance": policy_compliance,
+                "policy_process": policy_process,
+                "policy_penalty": policy_penalty,
             }
         elif flow_name == "how_student_life":
             clubs = self._extract_how_step_rows(all_flow_results, "clubs_overview")

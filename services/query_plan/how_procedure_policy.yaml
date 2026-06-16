@@ -1,0 +1,41 @@
+version: "1.0"
+flow_name: "how_procedure_policy"
+description: >
+  Workflow for HOW-PROCEDURE-POLICY questions about the official process or
+  procedure of a policy.
+
+  Strategy:
+  - Phase 1: Retrieve the policy identity needed for context.
+  - Phase 2: Retrieve the official handling process.
+
+  Fallback policy:
+  - Use the policy record first; if the process is missing, answer only with
+    the available policy identity fields without inventing procedural steps.
+
+supported_entity_types:
+  - Policy
+requires_entity_id: true
+
+traversal_steps:
+  # PHASE 1 - POLICY IDENTITY
+  - step: 1
+    name: "policy_overview"
+    description: "Fetch the policy identity for contextual grounding."
+    cypher_template: >
+      MATCH (p)
+      WHERE p.id = $entity_id AND (p:Policy)
+      RETURN p.name, p.description
+    attributes:
+      - name
+      - description
+
+  # PHASE 2 - OFFICIAL PROCESS
+  - step: 2
+    name: "policy_process"
+    description: "Fetch the official policy process or procedure."
+    cypher_template: >
+      MATCH (p)
+      WHERE p.id = $entity_id AND (p:Policy)
+      RETURN p.process
+    attributes:
+      - process

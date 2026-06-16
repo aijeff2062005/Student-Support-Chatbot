@@ -1694,6 +1694,41 @@
           <dmn:text>Sử dụng cơ sở vật chất</dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
+      <dmn:rule id="r_how_procedure_policy">
+        <dmn:inputEntry id="r_how_procedure_policy_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_procedure_policy_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_procedure_policy_topic">
+          <dmn:text>&quot;policy&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_procedure_policy_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;academic_policy&quot;, &quot;discipline&quot;, &quot;reward&quot;, &quot;conduct&quot;, &quot;violation&quot;, &quot;regulation&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_procedure_policy_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2B44B565-8D2C-4E7B-A7F7-B1ED2A7EDE10">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_procedure_policy_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C26F6F5A-8A67-4C8F-9C47-9F6B1A3C0E6A">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_procedure_policy_out">
+          <dmn:text>&quot;how_procedure_policy&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_procedure_policy_answer">
+          <dmn:text>&quot;how_procedure_policy&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Quy trình áp dụng/chấp hành chính sách kỷ luật hoặc quy định nội bộ</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
       <dmn:rule id="r_how_fee">
         <dmn:inputEntry id="r_how_fee_qtype">
           <dmn:text>&quot;how&quot;</dmn:text>
