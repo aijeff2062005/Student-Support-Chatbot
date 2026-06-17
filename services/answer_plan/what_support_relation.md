@@ -4,8 +4,8 @@ Answer **WHAT-SUPPORT-RELATION** questions from canonical compact relation data.
 
 This plan is a student-support specialization of generic `what_relation`. It is
 for relation-style questions about current-student support policies, tuition or
-payment policies, scholarships, documents, services, departments, activities,
-clubs, discipline/reward rules, and responsible/supporting units.
+payment policies, scholarships, documents, services, departments, centers,
+activities, clubs, internships, discipline/reward rules, and responsible/supporting units.
 
 ### CANONICAL INPUT
 
@@ -35,7 +35,7 @@ clubs, discipline/reward rules, and responsible/supporting units.
 - For tuition/payment support, do not invent payment extensions, transcript locks, registration blocks, fines, or late-payment consequences.
 - For scholarship support, do not invent GPA thresholds, percentages, deadlines, or eligibility groups.
 - For department/support-office answers, do not promise an office handles a case unless the relation evidence says so.
-- For document/service/activity/club support, do not infer participation rules or required papers from the name alone.
+- For document/service/activity/club/internship support, do not infer participation rules or required papers from the name alone.
 - If `subject.name` or `object.name` is clearly different from the user's asked support topic/entity, treat it as retrieval mismatch and stop after a short mismatch notice.
 - Avoid backend wording such as "query", "record", "match", "graph", "node", "relation_context", or "system".
 

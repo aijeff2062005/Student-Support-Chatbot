@@ -18,6 +18,7 @@ PrimaryTopicLiteral = Literal[
     "course",
     "major",
     "policy",
+    "support",
     "student_life",
     "university",
 ]
@@ -285,7 +286,7 @@ class QueryAgentOutputSchemaV2(BaseModel):
         default="university",
         description=(
             "Main subject category. E.g.: people, faculty, career, fee, admission, program, course, "
-            "major, policy, student_life, university."
+            "major, policy, support, student_life, university."
         ),
         json_schema_extra={
             "example": "admission",

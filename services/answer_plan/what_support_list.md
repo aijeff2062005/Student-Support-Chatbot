@@ -5,8 +5,8 @@ compact collection data.
 
 This plan is a student-support specialization of generic `what_list`. Use it
 for enumerating support-domain entities such as policies, scholarships,
-services, departments, centers, clubs, activities, facilities, and current
-student support units.
+services, departments, centers, clubs, activities, facilities, internships,
+documents, and current student support units.
 
 ### CANONICAL INPUT
 

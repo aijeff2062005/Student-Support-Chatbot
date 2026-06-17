@@ -4,7 +4,8 @@ description: >
   Workflow for WHAT-SUPPORT-RELATION queries.
   This follows the same relation pipeline as what_relation, but is used for
   current-student support-domain entities such as policies, services,
-  departments, centers, clubs, activities, facilities, and responsible units.
+  departments, centers, documents, clubs, activities, internships, facilities,
+  and responsible units.
 
 steps:
   - step_id: "P1_S1"

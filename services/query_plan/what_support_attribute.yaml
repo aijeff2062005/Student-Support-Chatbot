@@ -2,23 +2,22 @@ version: "1.0"
 flow_name: "what_support_attribute"
 description: >
   Workflow for WHAT-SUPPORT-ATTRIBUTE queries.
-  Handles single-fact support policy questions about scholarships, tuition
-  payment, late payment consequences, student support, and related student
-  policy attributes.
+  Handles single-fact questions about one support item in the student-support
+  domain. This includes policy, service, department, center, document,
+  activity, club, internship, and student-document facts.
 
   Strategy:
-  - Resolve the support/policy entity when the user names one.
+  - Resolve the support item when the user names one.
   - Retrieve structured node attributes first.
-  - Fall back to relation attributes connected to the resolved policy/support
-    entity.
+  - Fall back to relation attributes connected to the resolved support item.
   - If no entity resolves, run global attribute search using the full question.
-  - Do not use crawled-data generation for policy-sensitive support answers.
+  - Do not use crawled-data generation for support-sensitive answers.
 
 steps:
   # PHASE 1 - SUPPORT/POLICY ENTITY RESOLUTION
   - step_id: "P1_S1"
-    name: "resolve_support_policy_entity"
-    description: "Resolve named support policies such as scholarship, tuition payment, or student support."
+    name: "resolve_support_item_entity"
+    description: "Resolve named support items such as policy, service, department, center, document, activity, club, or internship."
     module: "dbs.milvus_helper"
     function: "search_entity_by_name"
     inputs:
@@ -32,7 +31,7 @@ steps:
   # PHASE 2 - STRUCTURED ATTRIBUTE RETRIEVAL
   - step_id: "P2_S1"
     name: "resolve_support_attribute_definitions"
-    description: "Map support-policy wording to canonical schema attribute names."
+    description: "Map support-item wording to canonical schema attribute names."
     condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0"
     module: "dbs.milvus_helper"
     function: "search_attribute_definitions"
@@ -45,7 +44,7 @@ steps:
 
   - step_id: "P2_S2"
     name: "fetch_support_entity_attributes"
-    description: "Fetch direct policy/support node attributes using resolved schema attribute names."
+    description: "Fetch direct support-item node attributes using resolved schema attribute names."
     condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and $state.resolved_attribute_definitions and len($state.resolved_attribute_definitions) > 0"
     module: "tools.QA.services.neo4j_service"
     class: "Neo4jService"
@@ -58,7 +57,7 @@ steps:
 
   - step_id: "P2_S3"
     name: "search_support_relation_attributes"
-    description: "Search support-policy relation attributes when direct node attributes are empty."
+    description: "Search support-item relation attributes when direct node attributes are empty."
     condition: "$state.primary_found_list is not None and len($state.primary_found_list) > 0 and not $state.entity_attributes"
     module: "dbs.milvus_helper"
     function: "search_relation_attributes_hybrid"
@@ -72,7 +71,7 @@ steps:
   # PHASE 3 - GLOBAL STRUCTURED FALLBACK
   - step_id: "P3_S1"
     name: "search_global_support_entity_attributes"
-    description: "Search policy/support attributes globally when no support entity resolves, prioritizing compact support keywords over the full sentence."
+    description: "Search support attributes globally when no support item resolves, prioritizing compact support keywords over the full sentence."
     condition: "not $state.entity_attributes and not $state.relation_attributes"
     module: "dbs.milvus_helper"
     function: "search_entity_attributes_hybrid"
