@@ -2843,7 +2843,15 @@ def _format_time_scope(time: dict[str, Any] | None = None) -> str:
     if not isinstance(time, dict):
         return ""
     from_year = time.get("from_year")
+    from_month = time.get("from_month")
     to_year = time.get("to_year")
+    to_month = time.get("to_month")
+    if from_year and from_month and to_year and to_month:
+        return f"giai đoạn **{from_year}/{from_month}-{to_year}/{to_month}**"
+    if from_year and from_month:
+        return f"tháng **{from_month}/{from_year}**"
+    if to_year and to_month:
+        return f"đến tháng **{to_month}/{to_year}**"
     if from_year and to_year:
         return f"giai đoạn **{from_year}-{to_year}**"
     if from_year:
