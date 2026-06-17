@@ -1,6 +1,7 @@
 from datetime import datetime
 
 current_year = datetime.now().year
+current_month = datetime.now().month
 
 SYSTEM_PROMPT = f"""
 <system_policy>
@@ -52,6 +53,9 @@ Calculate Time Context using the current year which is {current_year}:
 - "năm ngoái" -> {{"from_year": {current_year} - 1, "to_year": null}}
 - "K[n]" Cohort Formula: Year = 2006 + n (e.g., K19 -> 2025 -> {{"from_year": 2025, "to_year": null}})
 - Set `to_year` when no time is mentioned (default current-year boundary) or when a closed end boundary is explicit (e.g., "từ 2024 đến 2026").
+- "tháng này" -> {{"from_year": {current_year}, "from_month": {current_month}, "to_year": {current_year}, "to_month": {current_month}}}
+- "tháng sau" -> next month target as month-granular range with matching `from_year/from_month` and `to_year/to_month`.
+- "tháng 5 năm 2026" -> {{"from_year": 2026, "from_month": 5, "to_year": 2026, "to_month": 5}}
 </temporal_context_rules>
 
 <intent_classification_engine>

@@ -136,10 +136,10 @@ class QueryAgentOutputSchema(BaseModel):
         description="If disambiguation is needed",
     )
     time: dict[str, Any] | None = Field(
-        description='Time context. If the user does not explicitly mention time, default this to {"from_year": null, "to_year": current_year} instead of null.',
+        description='Time context. If the user does not explicitly mention time, default this to {"from_year": null, "to_year": current_year} instead of null. Month-granular queries may also use from_month/to_month.',
     )
     time_compare: dict[str, Any] | None = Field(
-        description="Time comparison context for two time periods. MUST be null if no comparison time is explicitly mentioned.",
+        description="Time comparison context for two time periods. MUST be null if no comparison time is explicitly mentioned. Month-granular comparisons may also use from_month/to_month.",
     )
     potential_entities: list[dict[str, str]] | None = Field(
         description="Inferred potential entities from question content when primary_entities is empty. Each item has 'type' (must be a valid primary_topic value) and 'label' (entity name). E.g. [{'type': 'Major', 'label': 'AI'}]",
@@ -177,11 +177,29 @@ class TimeContext(BaseModel):
             "example": 2026,
         },
     )
+    from_month: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description="Start month for a month-granular query. Use together with from_year when the user mentions a specific month or relative month.",
+        json_schema_extra={
+            "example": 6,
+        },
+    )
     to_year: int | None = Field(
         default=None,
         description="End year for the default current-year boundary when no time is mentioned, or for an explicit end boundary. Keep null for explicit single-year/start-bound queries.",
         json_schema_extra={
             "example": 2026,
+        },
+    )
+    to_month: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description="End month for a month-granular query. Use together with to_year when the user mentions a specific month or relative month.",
+        json_schema_extra={
+            "example": 6,
         },
     )
 
@@ -213,8 +231,22 @@ class TimeCompareContext(BaseModel):
     from_year: int | None = Field(
         default=None, description="Resolved start year for comparison.", json_schema_extra={"example": 2023}
     )
+    from_month: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description="Resolved start month for comparison when month granularity is needed.",
+        json_schema_extra={"example": 1},
+    )
     to_year: int | None = Field(
         default=None, description="Resolved end year for comparison.", json_schema_extra={"example": 2024}
+    )
+    to_month: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description="Resolved end month for comparison when month granularity is needed.",
+        json_schema_extra={"example": 12},
     )
 
 

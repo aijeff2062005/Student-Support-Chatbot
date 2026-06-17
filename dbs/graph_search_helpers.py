@@ -1,4 +1,5 @@
 import copy
+import calendar
 import re
 import traceback
 from datetime import date, datetime, time, timedelta
@@ -44,6 +45,7 @@ def _normalize_temporal_params(time: dict[str, Any] | None = None) -> tuple:
       3. Year int:    2025   → same as above
       4. time dict:   {"mode": "year", "year": 2025}
                       {"mode": "range", "from_year": 2024, "to_year": 2026}
+                      {"from_year": 2026, "from_month": 7, "to_year": 2026, "to_month": 7}
 
     Priority: time dict > effective_from/effective_to
 
@@ -54,6 +56,40 @@ def _normalize_temporal_params(time: dict[str, Any] | None = None) -> tuple:
     if time and isinstance(time, dict):
         effective_from = time.get("from_year", None)
         effective_to = time.get("to_year", None)
+        from_month = time.get("from_month", None)
+        to_month = time.get("to_month", None)
+
+        def _as_int(value: Any) -> int | None:
+            if value is None or value == "":
+                return None
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return None
+
+        def _month_end_day(year: int, month: int) -> int:
+            return calendar.monthrange(year, month)[1]
+
+        from_year_int = _as_int(effective_from)
+        to_year_int = _as_int(effective_to)
+        from_month_int = _as_int(from_month)
+        to_month_int = _as_int(to_month)
+
+        if from_month_int is not None or to_month_int is not None:
+            if from_year_int is None and to_year_int is not None:
+                from_year_int = to_year_int
+            if to_year_int is None and from_year_int is not None:
+                to_year_int = from_year_int
+            if from_year_int is None and to_year_int is None:
+                current_year = datetime.now().year
+                from_year_int = current_year
+                to_year_int = current_year
+
+            start_month = from_month_int if from_month_int is not None else (to_month_int if to_month_int is not None else 1)
+            end_month = to_month_int if to_month_int is not None else start_month
+            effective_from = f"{from_year_int:04d}-{start_month:02d}-01"
+            effective_to = f"{to_year_int:04d}-{end_month:02d}-{_month_end_day(to_year_int, end_month):02d}"
+            return effective_from, effective_to
 
         if effective_to:
             if effective_from:

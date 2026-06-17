@@ -79,7 +79,9 @@ class TimeInfo(BaseModel):
     mode: Literal["year", "range", "unknown"] = "unknown"
     year: int | None = 0
     from_year: int | None = 0
+    from_month: int | None = 0
     to_year: int | None = 0
+    to_month: int | None = 0
     raw: str | None = None
 
 
@@ -87,7 +89,9 @@ class TimeCompare(BaseModel):
 
     mode: Literal["year", "range", "unknown"] = "unknown"
     from_year: int | None = 0
+    from_month: int | None = 0
     to_year: int | None = 0
+    to_month: int | None = 0
     from_raw: str | None = None
     to_raw: str | None = None
 

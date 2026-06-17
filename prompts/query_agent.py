@@ -1,6 +1,7 @@
 from datetime import datetime
 
 current_year = datetime.now().year
+current_month = datetime.now().month
 
 SYSTEM_PROMPT = f"""
 # GDU Admission Q&A Parser Agent
@@ -91,7 +92,7 @@ If the user already writes a full phrase (for example `"an ninh mạng"`, `"toá
 - Identify all implicit references (e.g., "trường" implies "Trường Đại học Gia Định" if no other university is mentioned).
 - **Academic attribute owner override:** When the requested attribute is an academic-program attribute that belongs to `Major` / `Specialization` / `AcademicProgram` (for example `tín chỉ`, `thời gian đào tạo`, `học bao lâu`, `hệ đào tạo`, `chương trình đào tạo`, `nội dung chương trình`, `mục tiêu đào tạo`, `chuẩn đầu ra`, `điều kiện tốt nghiệp`, `phương pháp giảng dạy`, `cơ hội việc làm`), a broad `trường` / `GDU` / `Trường Đại học Gia Định` mention is only the school container and MUST NOT become `primary_topic="university"` or a `University` attribute lookup. If no concrete Major/Specialization/AcademicProgram is named, apply the Unscoped academic attribute routing rule: `intent="attributes"`, `primary_topic="major"`, `primary_entities=[]`, `context_entities=[]`, `needs_disambiguation=true`.
 - Calculate Time Context using the current year which is **{current_year}**:
-  - `time` MUST contain ONLY `from_year` and `to_year`.
+- `time` MUST contain `from_year`, `to_year`, and may also include `from_month` / `to_month` for month-granular queries.
   - If the user does not mention any time, default `time` to `{{"from_year": null, "to_year": {current_year}}}`.
   - For a single explicit year or start-bound query, set only `from_year` and keep `to_year=null`.
   - Set `to_year` when no time is mentioned (default current-year boundary) or when the user explicitly mentions an end boundary / closed range end.
@@ -102,6 +103,9 @@ If the user already writes a full phrase (for example `"an ninh mạng"`, `"toá
   - "đến năm 2026" / "tới 2026" → `{{"from_year": null, "to_year": 2026}}`.
   - "từ 2024 đến 2026" → `{{"from_year": 2024, "to_year": 2026}}`.
   - "K[n]" → Cohort Year. Formula: K(n) = 2006 + n (e.g., K19 = 2025) → `{{"from_year": 2025, "to_year": null}}`.
+  - "tháng này" → `{{"from_year": {current_year}, "from_month": {current_month}, "to_year": {current_year}, "to_month": {current_month}}}`.
+  - "tháng sau" → advance one month from the current month and set the matching `from_year/from_month` and `to_year/to_month` for that target month.
+  - "tháng 5 năm 2026" → `{{"from_year": 2026, "from_month": 5, "to_year": 2026, "to_month": 5}}`.
 
 ### Step 2: Intent Classification Engine
 
