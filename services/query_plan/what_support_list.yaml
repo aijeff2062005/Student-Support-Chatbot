@@ -4,7 +4,8 @@ description: >
   Workflow for WHAT-SUPPORT-LIST and routed WHAT-SUPPORT-COUNT queries.
   This follows the same deterministic listing pipeline as what_list, but is
   used for current-student support-domain entities such as policies, services,
-  departments, centers, clubs, activities, and facilities.
+  departments, centers, documents, clubs, activities, internships, and
+  facilities.
 
 steps:
   - step_id: "P1_S1"
