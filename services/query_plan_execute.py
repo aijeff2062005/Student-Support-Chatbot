@@ -895,18 +895,27 @@ class QueryOrchestrator:
         elif flow_name == "how_procedure_policy":
             policy_overview = self._extract_how_step_rows(all_flow_results, "policy_overview")
             policy_compliance = self._extract_how_step_rows(all_flow_results, "policy_compliance")
+            policy_rich_context = self._extract_how_step_rows(all_flow_results, "policy_rich_context")
             policy_process = self._extract_how_step_rows(all_flow_results, "policy_process")
             policy_penalty = self._extract_how_step_rows(all_flow_results, "policy_penalty")
+            rich_context_row = policy_rich_context[0] if policy_rich_context else None
             answer_data = {
                 "scope_entity": scope_entity,
                 "policy": policy_overview[0] if policy_overview else None,
                 "compliance": policy_compliance[0] if policy_compliance else None,
-                "process": policy_process[0] if policy_process else None,
+                "student_action": rich_context_row.get("student_action") if isinstance(rich_context_row, dict) else None,
+                "requirements": rich_context_row.get("requirements") if isinstance(rich_context_row, dict) else None,
+                "process": (
+                    rich_context_row.get("process")
+                    if isinstance(rich_context_row, dict) and rich_context_row.get("process") is not None
+                    else (policy_process[0] if policy_process else None)
+                ),
                 "penalty": policy_penalty[0] if policy_penalty else None,
             }
             structured_evidence = {
                 "policy_overview": policy_overview,
                 "policy_compliance": policy_compliance,
+                "policy_rich_context": policy_rich_context,
                 "policy_process": policy_process,
                 "policy_penalty": policy_penalty,
             }

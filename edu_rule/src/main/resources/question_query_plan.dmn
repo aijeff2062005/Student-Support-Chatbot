@@ -1705,7 +1705,7 @@
           <dmn:text>&quot;policy&quot;</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="r_how_procedure_policy_subtopics">
-          <dmn:text>some t in ? satisfies list contains([&quot;academic_policy&quot;, &quot;discipline&quot;, &quot;reward&quot;, &quot;conduct&quot;, &quot;violation&quot;, &quot;regulation&quot;], t)</dmn:text>
+          <dmn:text>some t in ? satisfies list contains([&quot;academic_policy&quot;, &quot;discipline&quot;, &quot;reward&quot;, &quot;conduct&quot;, &quot;violation&quot;, &quot;regulation&quot;, &quot;scholarship&quot;, &quot;tuition&quot;, &quot;payment&quot;, &quot;course_registration&quot;, &quot;student_document&quot;, &quot;document&quot;, &quot;major_transfer&quot;, &quot;graduation&quot;, &quot;internship&quot;, &quot;activity&quot;, &quot;club&quot;, &quot;service&quot;, &quot;center&quot;, &quot;department_support&quot;], t)</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="r_how_procedure_policy_compare">
           <dmn:text>false</dmn:text>
