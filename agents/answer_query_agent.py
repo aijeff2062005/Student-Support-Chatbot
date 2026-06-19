@@ -81,8 +81,7 @@ def answer_query_prompt_builder(callback_context: CallbackContext):
 
     # --- 0a. SKIP if UC2 user (is_admission_topic=False) ---
     is_admission_topic = callback_context.state.get("is_admission_topic", None)
-    # UC2 skip disabled: let current-student/support questions be answered from data.
-    if False and is_admission_topic is False:
+    if is_admission_topic is False:
         logger.info("[answer_query_agent] is_admission_topic=False -> skipping (UC2 user).")
         return types.Content(parts=[types.Part(text="")], role="model")
 

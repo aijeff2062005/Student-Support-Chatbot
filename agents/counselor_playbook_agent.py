@@ -380,8 +380,7 @@ def counselor_playbook_prompt_builder(callback_context: CallbackContext):
 
     # --- 0c. UC2 ROUTING: Always return transfer message when is_admission_topic=False ---
     is_admission_topic = callback_context.state.get("is_admission_topic", None)
-    # UC2 transfer disabled: let current-student/support questions continue through QA/RAG.
-    if False and is_admission_topic is False:
+    if is_admission_topic is False:
         logger.info("[counselor_playbook_agent] UC2 detected -> delivering transfer message.")
         # Clear all extra_data (buttons, media, etc.)
         callback_context.state["extra_data"] = {}

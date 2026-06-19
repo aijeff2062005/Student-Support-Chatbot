@@ -54,8 +54,7 @@ def check_if_agent_should_run(callback_context: CallbackContext) -> types.Conten
         )
 
     is_admission_topic = current_state.get("is_admission_topic", None)
-    # UC2 segment skip disabled: let current-student/support questions continue downstream.
-    if False and is_admission_topic is False and agent_name == "segment_agent":
+    if is_admission_topic is False and agent_name == "segment_agent":
         logger.info(f"[Callback] is_admission_topic=False  skipping agent {agent_name} (UC2 user).")
         return types.Content(
             parts=[types.Part(text=f"Agent {agent_name} skipped — user is UC2 (current student).")],

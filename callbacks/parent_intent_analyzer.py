@@ -349,9 +349,8 @@ def check_admission_topic_skip(
             parts=[types.Part(text=f"[{agent_name}] Skipped — user is blocked.")],
             role="model",
         )
-
-    # UC2 skip disabled: let current-student/support questions continue through QA/RAG.
-    if False and is_admission_topic is False:
+        
+    if is_admission_topic is False:
         logger.info(f"[AdmissionTopicSkip] is_admission_topic=False -> skipping agent {agent_name}.")
         return types.Content(
             parts=[types.Part(text=f"[{agent_name}] Skipped — user is UC2 (current student).")],
