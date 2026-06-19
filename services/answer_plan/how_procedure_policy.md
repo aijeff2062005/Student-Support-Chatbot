@@ -8,12 +8,17 @@ Answer **HOW-PROCEDURE-POLICY** questions with a policy-first explanation of the
 - `PRIMARY_FACTS.answer.kind = "procedure"`
 - `PRIMARY_FACTS.answer.data` should prioritize:
   - `policy`
+  - `student_action`
+  - `requirements`
   - `process`
   - `scope_entity`
 
 ### TRANSITIONAL COMPATIBILITY (CURRENT STATE)
 
 - `policy_overview` -> `answer.data.policy`
+- `policy_rich_context.student_action` -> `answer.data.student_action`
+- `policy_rich_context.requirements` -> `answer.data.requirements`
+- `policy_rich_context.process` -> `answer.data.process`
 - `policy_process` -> `answer.data.process`
 
 ### RESPONSE FLOW
@@ -22,7 +27,8 @@ Answer **HOW-PROCEDURE-POLICY** questions with a policy-first explanation of the
 - State the policy name and code if available.
 
 2. OFFICIAL PROCESS
-- Explain the official handling or procedural steps using the policy's process field.
+- Prefer `student_action` and `requirements` for the student-facing explanation.
+- Use `process` only as a fallback when `student_action` is missing or too sparse.
 
 ### SPECIAL RULES
 

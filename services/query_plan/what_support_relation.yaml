@@ -219,24 +219,24 @@ steps:
       obj: "$state.primary_found_list.0"
     outputs: "relation_answer_data"
 
-  - step_id: "P4_S1"
-    name: "crawled_data_search"
-    description: "Search crawled data when graph and relation retrieval produce no compact result."
-    condition: "not $state.relation_context and not ($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
-    module: "dbs.milvus_helper"
-    function: "search_crawled_data"
-    inputs:
-      question: "$input.original_query"
-      top_k: 5
-    outputs: "crawled_data_results"
+  # - step_id: "P4_S1"
+  #   name: "crawled_data_search"
+  #   description: "Search crawled data when graph and relation retrieval produce no compact result."
+  #   condition: "not $state.relation_context and not ($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+  #   module: "dbs.milvus_helper"
+  #   function: "search_crawled_data"
+  #   inputs:
+  #     question: "$input.original_query"
+  #     top_k: 5
+  #   outputs: "crawled_data_results"
 
-  - step_id: "P4_S2"
-    name: "generate_crawled_data"
-    description: "Generate and cache crawled data when all relation retrieval paths are empty."
-    condition: "not $state.relation_context and not $state.crawled_data_results and not ($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
-    module: "dbs.milvus_helper"
-    function: "generate_and_save_crawled_data"
-    inputs:
-      question: "$input.original_query"
-      collection_name: "knowledge_university_crawled_data"
-    outputs: "crawled_data_results"
+  # - step_id: "P4_S2"
+  #   name: "generate_crawled_data"
+  #   description: "Generate and cache crawled data when all relation retrieval paths are empty."
+  #   condition: "not $state.relation_context and not $state.crawled_data_results and not ($state.context_found_list is not None and $state.primary_found_list is not None and len($state.context_found_list) > 0 and len($state.primary_found_list) > 0 and $state.context_found_list[0]['node_type'] == 'Major' and $state.primary_found_list[0]['node_type'] == 'Policy') and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.primary_entities or [])) and not any(entity.get('label') in ['Policy', 'AdmissionPolicy'] for entity in ($input.context_entities or []))"
+  #   module: "dbs.milvus_helper"
+  #   function: "generate_and_save_crawled_data"
+  #   inputs:
+  #     question: "$input.original_query"
+  #     collection_name: "knowledge_university_crawled_data"
+  #   outputs: "crawled_data_results"

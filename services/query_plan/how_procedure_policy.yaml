@@ -1,41 +1,48 @@
 version: "1.0"
-flow_name: "how_procedure_policy"
+flow_name: "how_policy_procedure"
 description: >
-  Workflow for HOW-PROCEDURE-POLICY questions about the official process or
-  procedure of a policy.
+  Workflow for STUDENT-CENTRIC HOW questions about the requirements, action steps, 
+  and procedures required for a student to execute or satisfy a policy.
 
   Strategy:
-  - Phase 1: Retrieve the policy identity needed for context.
-  - Phase 2: Retrieve the official handling process.
-
+  - Phase 1: Retrieve core policy identification (identity and metadata).
+  - Phase 2: Retrieve student actions and eligibility criteria.
+  
   Fallback policy:
-  - Use the policy record first; if the process is missing, answer only with
-    the available policy identity fields without inventing procedural steps.
+  - Prioritize 'student_action' and 'requirements' for student-facing context.
+  - If 'student_action' is null/missing, fallback to retrieve 'process' alongside 
+    'requirements' so the Response Composer can safely parse student-relevant instructions 
+    without exposing internal admin workflows.
 
 supported_entity_types:
   - Policy
 requires_entity_id: true
 
 traversal_steps:
-  # PHASE 1 - POLICY IDENTITY
+  # PHASE 1 - POLICY IDENTITY & CORE OVERVIEW
   - step: 1
     name: "policy_overview"
-    description: "Fetch the policy identity for contextual grounding."
+    description: "Fetch the core policy identification fields for contextual grounding."
     cypher_template: >
-      MATCH (p)
-      WHERE p.id = $entity_id AND (p:Policy)
-      RETURN p.name, p.description
+      MATCH (p:Policy)
+      WHERE p.id = $entity_id
+      RETURN p.name, p.description, p.type
     attributes:
       - name
       - description
+      - type
 
-  # PHASE 2 - OFFICIAL PROCESS
+  # PHASE 2 - STUDENT ACTIONS & RICH CONTEXT (WITH PROCESS FALLBACK)
   - step: 2
-    name: "policy_process"
-    description: "Fetch the official policy process or procedure."
+    name: "policy_rich_context"
+    description: >
+      Fetch student-specific actions and requirements. Returns internal handling 'process' 
+      as a contextual fallback if 'student_action' is empty.
     cypher_template: >
-      MATCH (p)
-      WHERE p.id = $entity_id AND (p:Policy)
-      RETURN p.process
+      MATCH (p:Policy)
+      WHERE p.id = $entity_id
+      RETURN p.student_action, p.requirements, p.process
     attributes:
+      - student_action
+      - requirements
       - process
