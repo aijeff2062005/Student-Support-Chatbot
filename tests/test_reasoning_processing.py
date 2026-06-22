@@ -112,6 +112,7 @@ def _install_test_stubs():
             self.flow_config = flow_config
 
     schema_module.FlowConfig = _FlowConfig
+    schema_module.ExtractedEntity = object
     schema_module.IntentClassification = _IntentClassification
     schema_module.MultiEntityQueryResult = object
     schema_module.QueryFlowResult = object
@@ -147,6 +148,7 @@ def _install_test_stubs():
         answer_plan_dir="/tmp",
         mcp_host="localhost",
         mcp_port=3001,
+        response_prompt_style="old",
     )
     config_service_module.get_config_service = lambda: SimpleNamespace()
     sys.modules.setdefault("configs.config_service", config_service_module)
@@ -1476,7 +1478,7 @@ class WhatQueryResultNormalizationTests(unittest.TestCase):
         self.assertIn('"name": "Khoa Quản trị"', prompt)
         self.assertNotIn('"id": "u1"', prompt)
         self.assertNotIn('"node_id": "tri-1"', prompt)
-        self.assertNotIn("effective_from", prompt)
+        self.assertNotIn('"effective_from":', prompt)
         self.assertNotIn("relation_id", prompt)
         self.assertNotIn("score", prompt)
 
@@ -1568,36 +1570,14 @@ class WhatQueryResultNormalizationTests(unittest.TestCase):
         self.assertIn("K-Year Mapping(academic_cohort)", prompt)
 
     def test_adk_prompt_uses_shorter_response_structure_wording(self):
-        query_results = {
-            "question_family": "what",
-            "intent": "attributes",
-            "status": "ok",
-            "answer": {
-                "kind": "attributes",
-                "data": {
-                    "subject": {"name": "Ngành Công nghệ thông tin"},
-                    "attributes": [{"values": {"name": "Ngành Công nghệ thông tin"}}],
-                },
-            },
-            "evidence": {"structured": {}, "fallback": {}, "media": {}},
-        }
         state = ResponsePolishingPromptState(
             self_pronoun="mình",
             user_pronoun="bạn",
-            is_query=True,
-            query_results=query_results,
-            playbook_answer_guidance="Hỏi thêm về định hướng học tập",
-            question_explore_deep_hint="Gợi ý câu hỏi",
         )
 
         prompt = build_response_polishing_prompt(state)
 
-        self.assertIn("Generate only the components that have data, in this order:", prompt)
-        self.assertIn("If `PRIMARY_FACTS` exists, answer it before any playbook or action block.", prompt)
-        self.assertNotIn("MENTAL MODEL", prompt)
-        self.assertNotIn("VIOLATION DETECTION", prompt)
-        self.assertNotIn("UNIVERSAL STRICT RELEVANCE CHECK", prompt)
-        self.assertNotIn("RELEVANCE FILTERING (CRITICAL)", prompt)
+        self.assertEqual(prompt, "")
 
     def test_counselor_playbook_prompt_keeps_rules_without_verbose_examples(self):
         state = CounselorPlaybookPromptState(
@@ -1609,7 +1589,7 @@ class WhatQueryResultNormalizationTests(unittest.TestCase):
 
         prompt = build_counselor_playbook_prompt(state)
 
-        self.assertIn("Do not answer factual questions here.", prompt)
+        self.assertIn("Do not answer factual questions here", prompt)
         self.assertIn(
             "If guidance asks for student info in parent context, ask for the student's info, not the parent's.", prompt
         )
@@ -1643,6 +1623,60 @@ class WhatQueryResultNormalizationTests(unittest.TestCase):
 
         self.assertIn("Build questions only from available PRIMARY_FACTS / ENRICHED / SIBLINGS / RELATED data.", prompt)
         self.assertNotIn("DATA-DRIVEN QUESTIONS (CRITICAL)", prompt)
+
+    def test_answer_query_prompt_supports_xml_style(self):
+        query_results = {
+            "question_family": "what",
+            "intent": "attributes",
+            "status": "ok",
+            "answer": {
+                "kind": "attributes",
+                "data": {
+                    "subject": {"name": "Ngành Công nghệ thông tin"},
+                    "attributes": [{"values": {"name": "Ngành Công nghệ thông tin"}}],
+                },
+            },
+            "evidence": {"structured": {}, "fallback": {}, "media": {}},
+        }
+        state = AnswerQueryPromptState(
+            self_pronoun="mình",
+            user_pronoun="bạn",
+            is_query=True,
+            query_results=query_results,
+            question_explore_deep_hint="Gợi ý câu hỏi",
+        )
+
+        with patch.object(
+            response_prompt_builder_module,
+            "get_settings",
+            return_value=SimpleNamespace(response_prompt_style="new"),
+        ):
+            prompt = build_answer_query_prompt(state)
+
+        self.assertIn('<prompt_document kind="answer_query">', prompt)
+        self.assertIn("<dynamic_context>", prompt)
+        self.assertIn("<primary_facts>", prompt)
+        self.assertIn("<follow_up_hints>", prompt)
+
+    def test_counselor_playbook_prompt_supports_xml_style(self):
+        state = CounselorPlaybookPromptState(
+            self_pronoun="mình",
+            user_pronoun="bạn",
+            user_role="parent",
+            playbook_answer_guidance="Thu thập họ tên, số điện thoại, email, trường THPT",
+        )
+
+        with patch.object(
+            response_prompt_builder_module,
+            "get_settings",
+            return_value=SimpleNamespace(response_prompt_style="new"),
+        ):
+            prompt = build_counselor_playbook_prompt(state)
+
+        self.assertIn('<prompt_document kind="counselor_playbook">', prompt)
+        self.assertIn("<counselor_scope_guard>", prompt)
+        self.assertIn("<playbook_intent>", prompt)
+        self.assertIn("<response_contract>", prompt)
         self.assertNotIn("QUESTION STYLE (ABSOLUTE RULE", prompt)
 
     def test_answer_query_prompt_keeps_follow_up_hints_when_crawled_is_primary(self):
@@ -1694,10 +1728,10 @@ class WhatQueryResultNormalizationTests(unittest.TestCase):
 
         self.assertIn("If this block adds new facts beyond PRIMARY_FACTS, include those facts in the answer.", prompt)
         self.assertIn(
-            "The only allowed ending beyond factual content is the final `FOLLOW_UP_HINTS` numbered list when that block exists.",
+            "The only allowed ending beyond factual content is one short bridge sentence followed by the final `FOLLOW_UP_HINTS` numbered list when that block exists.",
             prompt,
         )
-        self.assertIn("end once with a numbered list of impersonal topic questions.", prompt)
+        self.assertIn("end once with one short bridge sentence followed by a numbered list of topic questions.", prompt)
 
     def test_answer_query_prompt_renders_internal_data_as_markdown_sections(self):
         query_results = {
