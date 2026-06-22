@@ -29,6 +29,30 @@ def read_md_file(folder_path: Path, filename: str) -> str:
 logger = logging.getLogger("why_query_plan_dmn_processing")
 
 
+def _derive_potential_type(
+    primary_entities: list[dict[str, Any]] | None,
+    potential_entities: list[dict[str, Any]] | None,
+) -> str:
+    primary_entities = primary_entities or []
+    potential_entities = potential_entities or []
+
+    has_activity = any(str(entity.get("label") or "").strip().lower() == "activity" for entity in primary_entities)
+    has_activity = has_activity or any(
+        str(entity.get("type") or "").strip().lower() == "activity" for entity in potential_entities
+    )
+    if has_activity:
+        return "activity"
+
+    has_major = any(str(entity.get("label") or "").strip().lower() == "major" for entity in primary_entities)
+    has_major = has_major or any(
+        str(entity.get("type") or "").strip().lower() == "major" for entity in potential_entities
+    )
+    if has_major:
+        return "major"
+
+    return ""
+
+
 # class AnswerHintTemplateParam(str, Enum):
 # 	"""Enumeration for answer hint template parameters."""
 #
@@ -106,8 +130,8 @@ class QueryPlanDMNProcessor:
 
         # Derive potential_type from potential_entities for DMN input
         potential_entities = state.get("potential_entities", [])
-        major_entity = next((e for e in potential_entities if e.get("type") == "major"), None)
-        potential_type = "major" if major_entity else ""
+        primary_entities = state.get("primary_entities", [])
+        potential_type = _derive_potential_type(primary_entities, potential_entities)
 
         data = {
             "qtype": state.get("qtype", "").lower(),
@@ -226,8 +250,8 @@ class QueryPlanDMNProcessor:
     def _extract_from_override_state(self, override_state: dict) -> dict:
         """Extract DMN payload fields from an override_state dict (mirrors _extract_context_data)."""
         potential_entities = override_state.get("potential_entities", [])
-        major_entity = next((e for e in potential_entities if e.get("type") == "major"), None)
-        potential_type = "major" if major_entity else ""
+        primary_entities = override_state.get("primary_entities", [])
+        potential_type = _derive_potential_type(primary_entities, potential_entities)
 
         return {
             "qtype": override_state.get("qtype", "").lower(),
@@ -257,6 +281,7 @@ class QueryPlanDMNProcessor:
 
         subtopics = self._normalize_subtopics(payload.get("subtopics"))
         topic = str(payload.get("topic") or "").lower()
+        potential_type = str(payload.get("potential_type") or "").lower()
         support_tags = {
             "support",
             "academic_policy",
@@ -281,6 +306,26 @@ class QueryPlanDMNProcessor:
         intent = str(payload.get("intent") or "").lower()
         is_support_domain = bool(subtopics & support_tags) or topic in {"policy", "fee", "student_life", "career"}
         is_support_list_domain = bool(subtopics & support_tags) or topic in {"fee", "student_life", "career"}
+
+        if (
+            qtype == "how"
+            and intent in {"procedure", "explain"}
+            and topic == "student_life"
+            and potential_type == "activity"
+            and bool(subtopics & {"activity", "event"})
+        ):
+            patched = dict(output)
+            patched["query_plan"] = "how_activity"
+            patched["answer_plan"] = "how_activity"
+            logger.info(
+                "Applied local DMN override: qtype=%s intent=%s topic=%s subtopics=%s potential_type=%s -> how_activity",
+                payload.get("qtype"),
+                payload.get("intent"),
+                payload.get("topic"),
+                payload.get("subtopics"),
+                payload.get("potential_type"),
+            )
+            return patched
 
         if qtype == "what" and intent in {"list", "count"} and is_support_list_domain:
             patched = dict(output)

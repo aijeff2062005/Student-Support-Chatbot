@@ -804,6 +804,7 @@ class QueryOrchestrator:
             "how_course_roadmap": (HowIntent.COURSE, HowAnswerKind.ROADMAP),
             "how_fee": (HowIntent.FEE, HowAnswerKind.PROCEDURE),
             "how_procedure_policy": (HowIntent.POLICY, HowAnswerKind.PROCEDURE),
+            "how_activity": (HowIntent.ACTIVITY, HowAnswerKind.PROCEDURE),
             "how_student_life": (HowIntent.STUDENT_LIFE, HowAnswerKind.PROCEDURE),
             "how_facilities": (HowIntent.FACILITIES, HowAnswerKind.PROCEDURE),
             "how_campus_contact": (HowIntent.CAMPUS_CONTACT, HowAnswerKind.CONTACT),
@@ -918,6 +919,20 @@ class QueryOrchestrator:
                 "policy_rich_context": policy_rich_context,
                 "policy_process": policy_process,
                 "policy_penalty": policy_penalty,
+            }
+        elif flow_name == "how_activity":
+            activity_participation = self._extract_how_step_rows(all_flow_results, "activity_participation")
+            activity_organizers = self._extract_how_step_rows(all_flow_results, "activity_organizers")
+            activity = activity_participation[0] if activity_participation else None
+            answer_data = {
+                "scope_entity": scope_entity,
+                "activity": activity,
+                "official_source_url": activity.get("source_url") if isinstance(activity, dict) else None,
+                "organizers": activity_organizers,
+            }
+            structured_evidence = {
+                "activity_participation": activity_participation,
+                "activity_organizers": activity_organizers,
             }
         elif flow_name == "how_student_life":
             clubs = self._extract_how_step_rows(all_flow_results, "clubs_overview")
