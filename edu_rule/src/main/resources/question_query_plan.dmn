@@ -1694,6 +1694,41 @@
           <dmn:text>Sử dụng cơ sở vật chất</dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
+      <dmn:rule id="r_how_internship">
+        <dmn:inputEntry id="r_how_internship_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_topic">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;internship&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_internship_potential">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_internship_out">
+          <dmn:text>&quot;how_internship&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_internship_answer">
+          <dmn:text>&quot;how_internship&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Internship procedure</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
       <dmn:rule id="r_how_procedure_policy">
         <dmn:inputEntry id="r_how_procedure_policy_qtype">
           <dmn:text>&quot;how&quot;</dmn:text>

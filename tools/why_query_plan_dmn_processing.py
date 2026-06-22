@@ -307,6 +307,19 @@ class QueryPlanDMNProcessor:
         is_support_domain = bool(subtopics & support_tags) or topic in {"policy", "fee", "student_life", "career"}
         is_support_list_domain = bool(subtopics & support_tags) or topic in {"fee", "student_life", "career"}
 
+        if qtype == "how" and intent in {"procedure", "explain"} and "internship" in subtopics:
+            patched = dict(output)
+            patched["query_plan"] = "how_internship"
+            patched["answer_plan"] = "how_internship"
+            logger.info(
+                "Applied local DMN override: qtype=%s intent=%s topic=%s subtopics=%s -> how_internship",
+                payload.get("qtype"),
+                payload.get("intent"),
+                payload.get("topic"),
+                payload.get("subtopics"),
+            )
+            return patched
+
         if (
             qtype == "how"
             and intent in {"procedure", "explain"}

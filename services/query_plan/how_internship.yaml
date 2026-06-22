@@ -1,0 +1,111 @@
+version: "1.0"
+flow_name: "how_internship"
+description: >
+  Workflow for HOW-INTERNSHIP questions about what students need to prepare
+  and what steps they should follow before, during, and after internship.
+
+  The current graph stores internship guidance mainly as Policy and Document
+  records, not as an Internship node label.
+
+supported_entity_types:
+  - University
+
+requires_entity_id: false
+
+traversal_steps:
+  - step: 1
+    name: "internship_policy"
+    description: "Fetch the official student internship policy and procedure."
+    cypher_template: >
+      MATCH (p:Policy)
+      WHERE toLower(coalesce(p.name, "")) CONTAINS "thực tập"
+         OR any(k IN coalesce(p.keywords, []) WHERE toLower(toString(k)) CONTAINS "thực tập")
+      RETURN p.name,
+             p.description,
+             p.requirements,
+             p.process,
+             p.applicable_object,
+             p.restriction,
+             p.status,
+             p.effective_from
+    attributes:
+      - name
+      - description
+      - requirements
+      - process
+      - applicable_object
+      - restriction
+      - status
+      - effective_from
+
+  - step: 2
+    name: "internship_documents"
+    description: "Fetch internship-related documents, forms, and submission guidance."
+    cypher_template: >
+      MATCH (d:Document)
+      WHERE toLower(coalesce(d.name, "")) CONTAINS "thực tập"
+         OR any(k IN coalesce(d.keywords, []) WHERE toLower(toString(k)) CONTAINS "thực tập")
+      OPTIONAL MATCH (d)-[:BELONGS_TO]-(unit)
+      WHERE unit:Department OR unit:Faculty OR unit:Center
+      WITH d, collect(DISTINCT unit.name) AS responsible_units
+      RETURN d.name,
+             d.description,
+             d.requirement,
+             d.application_steps,
+             d.processing_time,
+             d.fee,
+             d.form_url,
+             d.download_url,
+             responsible_units
+      ORDER BY d.name
+    attributes:
+      - name
+      - description
+      - requirement
+      - application_steps
+      - processing_time
+      - fee
+      - form_url
+      - download_url
+      - responsible_units
+
+  - step: 3
+    name: "internship_support_units"
+    description: "Fetch confirmed units connected to internship policies or documents."
+    cypher_template: >
+      MATCH (unit)-[:MANAGES|BELONGS_TO]-(item)
+      WHERE (unit:Department OR unit:Center OR unit:Faculty)
+        AND (item:Policy OR item:Document)
+        AND (
+          toLower(coalesce(item.name, "")) CONTAINS "thực tập"
+          OR any(k IN coalesce(item.keywords, []) WHERE toLower(toString(k)) CONTAINS "thực tập")
+        )
+      RETURN DISTINCT unit.name AS unit_name,
+             labels(unit) AS unit_types,
+             unit.description AS unit_description,
+             unit.website AS unit_website,
+             unit.emails AS unit_emails,
+             unit.phone AS unit_phone,
+             unit.fanpage AS unit_fanpage
+      ORDER BY unit_name
+    attributes:
+      - unit_name
+      - unit_types
+      - unit_description
+      - unit_website
+      - unit_emails
+      - unit_phone
+      - unit_fanpage
+
+output_hints:
+  answer_kind: "procedure"
+  primary_step: "internship_policy"
+  supporting_steps:
+    - "internship_documents"
+    - "internship_support_units"
+  focus:
+    - "requirements"
+    - "process"
+    - "documents"
+    - "forms"
+    - "responsible_units"

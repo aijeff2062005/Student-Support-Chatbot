@@ -19,6 +19,7 @@ class HowIntent(StrEnum):
     DOCUMENT = "document"
     POLICY = "policy"
     ACTIVITY = "activity"
+    INTERNSHIP = "internship"
     STUDENT_LIFE = "student_life"
     FACILITIES = "facilities"
     CAMPUS_CONTACT = "campus_contact"
@@ -172,6 +173,7 @@ class HowQueryResult(BaseModel):
             HowIntent.DOCUMENT: HowAnswerKind.PROCEDURE,
             HowIntent.POLICY: HowAnswerKind.PROCEDURE,
             HowIntent.ACTIVITY: HowAnswerKind.PROCEDURE,
+            HowIntent.INTERNSHIP: HowAnswerKind.PROCEDURE,
             HowIntent.STUDENT_LIFE: HowAnswerKind.PROCEDURE,
             HowIntent.FACILITIES: HowAnswerKind.PROCEDURE,
             HowIntent.CAMPUS_CONTACT: HowAnswerKind.CONTACT,

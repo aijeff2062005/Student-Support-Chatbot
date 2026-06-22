@@ -806,6 +806,7 @@ class QueryOrchestrator:
             "how_document": (HowIntent.DOCUMENT, HowAnswerKind.PROCEDURE),
             "how_procedure_policy": (HowIntent.POLICY, HowAnswerKind.PROCEDURE),
             "how_activity": (HowIntent.ACTIVITY, HowAnswerKind.PROCEDURE),
+            "how_internship": (HowIntent.INTERNSHIP, HowAnswerKind.PROCEDURE),
             "how_student_life": (HowIntent.STUDENT_LIFE, HowAnswerKind.PROCEDURE),
             "how_facilities": (HowIntent.FACILITIES, HowAnswerKind.PROCEDURE),
             "how_facilities_student_experience": (HowIntent.FACILITIES, HowAnswerKind.PROCEDURE),
@@ -949,6 +950,21 @@ class QueryOrchestrator:
             structured_evidence = {
                 "activity_participation": activity_participation,
                 "activity_organizers": activity_organizers,
+            }
+        elif flow_name == "how_internship":
+            internship_policy = self._extract_how_step_rows(all_flow_results, "internship_policy")
+            internship_documents = self._extract_how_step_rows(all_flow_results, "internship_documents")
+            internship_support_units = self._extract_how_step_rows(all_flow_results, "internship_support_units")
+            answer_data = {
+                "scope_entity": scope_entity,
+                "policy": internship_policy[0] if internship_policy else None,
+                "documents": internship_documents,
+                "support_units": internship_support_units,
+            }
+            structured_evidence = {
+                "internship_policy": internship_policy,
+                "internship_documents": internship_documents,
+                "internship_support_units": internship_support_units,
             }
         elif flow_name == "how_student_life":
             clubs = self._extract_how_step_rows(all_flow_results, "clubs_overview")
