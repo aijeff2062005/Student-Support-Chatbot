@@ -2184,6 +2184,76 @@
           <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
+      <dmn:rule id="r_how_keyword_document">
+        <dmn:inputEntry id="r_how_keyword_document_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_topic">
+          <dmn:text>&quot;document&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_keyword_document_potential_type">
+          <dmn:text>&quot;document&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_keyword_document_out">
+          <dmn:text>&quot;how_document&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_keyword_document_answer">
+          <dmn:text>&quot;how_keyword_document&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Thủ tục cho giấy tờ, hồ sơ, biểu mẫu sinh viên (keyword)</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_document">
+        <dmn:inputEntry id="r_how_document_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_topic">
+          <dmn:text>&quot;document&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_document_potential_type">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_document_out">
+          <dmn:text>&quot;how_document&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_document_answer">
+          <dmn:text>&quot;how_document&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Thủ tục cho giấy tờ, hồ sơ, biểu mẫu sinh viên</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
       <dmn:rule id="_C223ABAC-7659-4109-AB0E-FFD74FCA0910">
         <dmn:inputEntry id="_79FC4FAA-D10C-4032-9AD9-A00B819461D2">
           <dmn:text>&quot;how&quot;</dmn:text>
@@ -2392,6 +2462,41 @@
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="r_how_facilities_student_experience">
+        <dmn:inputEntry id="r_how_facilities_student_experience_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_student_experience_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_student_experience_topic">
+          <dmn:text>&quot;facilities&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_student_experience_subtopics">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_student_experience_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_56407F3B-3E95-45A0-8D81-F06CEF2BD260">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_facilities_student_experience_disambig">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_491D8BF1-D464-4EAE-BB5D-4DBAC152EDE6">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_facilities_student_experience_out">
+          <dmn:text>&quot;how_facilities_student_experience&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_facilities_student_experience_answer">
+          <dmn:text>&quot;how_facilities_student_experience&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Sử dụng cơ sở vật chất - Student Experience</dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
     </dmn:decisionTable>

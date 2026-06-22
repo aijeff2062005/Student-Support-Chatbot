@@ -18,6 +18,7 @@ PrimaryTopicLiteral = Literal[
     "course",
     "major",
     "policy",
+    "document",
     "support",
     "student_life",
     "university",
@@ -425,7 +426,7 @@ class QueryAgentOutputSchemaV2(BaseModel):
 
     subtopics: list[str] = Field(
         default_factory=list,
-        description="Specific thematic aspects to focus on (career, skills, curriculum, outcomes, ecosystem, partners, facilities, services, campus, cost_fee, procedure, cutoff, quota, combination, method, priority, scholarship, market_trend, ethics, support, academic_policy, tuition, payment, course_registration, student_document, graduation, major_transfer, internship, event, activity, club, service, department_support, discipline, reward, admission, media). For current-student support questions outside admissions, include 'support' plus the most specific support tag; examples include academic warning, policy scholarship, course registration, student documents, graduation, internship, events, clubs, services, departments, discipline, or rewards. Do not use this field to store omitted enumerated entity types from hierarchical list/count questions.",
+        description="Specific thematic aspects to focus on (career, skills, curriculum, outcomes, ecosystem, partners, facilities, services, campus, cost_fee, procedure, cutoff, quota, combination, method, priority, scholarship, market_trend, ethics, support, academic_policy, tuition, payment, course_registration, student_document, document, graduation, major_transfer, internship, event, activity, club, service, department_support, discipline, reward, admission, media). For current-student support questions outside admissions, include 'support' plus the most specific support tag; examples include academic warning, policy scholarship, course registration, student documents, graduation, internship, events, clubs, services, departments, discipline, or rewards. Do not use this field to store omitted enumerated entity types from hierarchical list/count questions.",
         json_schema_extra={
             "example": ["cost_fee"],
         },

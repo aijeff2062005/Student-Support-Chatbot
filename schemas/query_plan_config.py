@@ -17,6 +17,7 @@ class EntityType(StrEnum):
     COURSE = "Course"
     CAMPUS = "Campus"
     UNIVERSITY = "University"
+    DOCUMENT = "Document"
     PERSON = "Person"
 
 
@@ -51,6 +52,7 @@ class PrimaryTopic(StrEnum):
     COURSE = "course"
     ADMISSION = "admission"
     FEE = "fee"
+    DOCUMENT = "document"
     POLICY = "policy"
     STUDENT_LIFE = "student_life"
     CAMPUS = "campus"

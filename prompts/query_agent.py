@@ -157,7 +157,7 @@ Determine the query tier. Default to producing ONE merged JSON object whenever t
   - "Cách đăng ký nhập học?" → `procedure`
   - "Điểm chuẩn như thế nào?" → if it asks for the value/status of cutoff score, this is NOT a HOW query; classify by the admission score rules instead.
   - "Chương trình đào tạo ngành Răng Hàm Mặt như thế nào?" → asks for a factual program attribute; this is NOT a HOW query. Classify as WHAT `intent="attributes"` with `primary_entities=[{{"label":"AcademicProgram","text":"chương trình đào tạo răng hàm mặt"}}]`.
-- If the dominant request is HOW for a support/policy topic, keep `question_type="HOW"` even when the topic carries support tags such as `academic_policy`, `major_transfer`, `scholarship`, `tuition`, `payment`, `course_registration`, `student_document`, `graduation`, `internship`, `event`, `activity`, `club`, `service`, `department_support`, `discipline`, or `reward`. Do NOT downgrade a process/instruction question to `what_support_attribute` or `what_support_relation` just because the subject sounds like a policy/support item.
+- If the dominant request is HOW for a support/policy topic, keep `question_type="HOW"` even when the topic carries support tags such as `academic_policy`, `major_transfer`, `scholarship`, `tuition`, `payment`, `course_registration`, `student_document`, `document`, `graduation`, `internship`, `event`, `activity`, `club`, `service`, `department_support`, `discipline`, or `reward`. Do NOT downgrade a process/instruction question to `what_support_attribute` or `what_support_relation` just because the subject sounds like a policy/support item.
 - Surface cue priority:
   - `why` cue present as the clause head → force `explain`
   - else instruction/process/mechanism wording (`cách`, `làm sao`, `quy trình`, `vận hành`, `xử lý`, `thực hiện`, `đăng ký`, `nộp`, `triển khai`) → force `procedure` or `explain`
@@ -284,6 +284,7 @@ These overrides resolve common graph mapping ambiguities. Observe them strictly.
   - Support items include policy, service, department, center, document, activity, club, internship, and student document questions.
   - Use `intent="relation"` only when the user is asking which target entity the named support item connects to, applies to, is handled by, or is related to.
   - Examples: "Thủ tục xin bảng điểm thuộc đơn vị nào?" -> `intent="relation"`; "Bảng điểm cần giấy tờ gì?" -> `intent="attributes"`; "Thực tập áp dụng cho ngành nào?" -> `intent="relation"`; "Điều kiện tham gia hoạt động X là gì?" -> `intent="attributes"`.
+  - Document HOW questions like "làm thế nào để xin giấy xác nhận sinh viên?", "làm thế nào để tải mẫu đơn?", or "làm thế nào để nộp đơn bảo lưu?" must stay `question_type="HOW"` with `intent="procedure"`, `primary_topic="document"`, and `primary_entities=[{{"label":"Document", "text":"<giấy tờ hoặc biểu mẫu cụ thể>"}}]`.
 - **General Policies:** Queries about "học phí", "học bổng", general "quy định" or "chính sách" still use `Policy` when the entity is truly policy-like.
   - **Rule:** Extract as `Policy` in `primary_entities` with `intent="relation"`, except for the Student Support Attribute Exception above.
   - **This rule is mandatory for both `học phí` and `học bổng`.**
@@ -600,7 +601,7 @@ Example: "Tư vấn ngành" / "Tư vấn ngành chi tiết" / "Cho tôi biết v
 
 **3. Topic, Keywords & Semantic Enrichment Generation**
 
-- `primary_topic`: Select highest relevance from this fixed set only: people, faculty, career, campus, fee, admission, program, course, major, policy, student_life, university.
+- `primary_topic`: Select highest relevance from this fixed set only: people, faculty, career, campus, fee, admission, program, course, major, policy, document, student_life, university.
   - If no specific entity/topic is explicit, default to `university`.
   - For merged hierarchical enumeration, choose the highest-level enumerated topic that organizes the answer structure (e.g., `faculty` for Faculty→Major, `major` for Major→Course).
   - For attribute/info questions about a named `Major`, `Specialization`, or `AcademicProgram`, use `primary_topic="major"` or `primary_topic="program"` according to the named entity. This remains true when the requested attribute is `cơ hội việc làm` / `career_opportunities`.
@@ -615,6 +616,7 @@ Example: "Tư vấn ngành" / "Tư vấn ngành chi tiết" / "Cho tôi biết v
 - `keywords`: Max 5 short phrases summarizing the question core (exclude entity type words if counting).
 - `subtopics`: Use only for thematic aspects such as major, score, curriculum, career, outcomes, media, facilities, services, campus, cost_fee, procedure, cutoff, quota, combination, method, priority, scholarship, market_trend, ethics, admission. Do NOT use `subtopics` as a substitute for omitted enumerated entity types.
 - `potential_entities`: If `intent` is WHY/HOW and `primary_entities` is empty due to lack of explicit mention, infer the most likely entity context natively. (e.g., for "Làm sao xây chatbot?", infer `[{{"type": "major", "label": "Trí tuệ nhân tạo"}}]`).
+  - For document/procedure questions, use `type="document"` when the implied target is a document, form, transcript, certificate, or similar paper-based request.
 
 **4. `original_query` Rewrite Rules**
 
