@@ -16,6 +16,7 @@ class HowIntent(StrEnum):
     ADMISSION = "admission"
     COURSE = "course"
     FEE = "fee"
+    DOCUMENT = "document"
     POLICY = "policy"
     ACTIVITY = "activity"
     STUDENT_LIFE = "student_life"
@@ -168,6 +169,7 @@ class HowQueryResult(BaseModel):
             HowIntent.ADMISSION: HowAnswerKind.PROCEDURE,
             HowIntent.COURSE: HowAnswerKind.ROADMAP,
             HowIntent.FEE: HowAnswerKind.PROCEDURE,
+            HowIntent.DOCUMENT: HowAnswerKind.PROCEDURE,
             HowIntent.POLICY: HowAnswerKind.PROCEDURE,
             HowIntent.ACTIVITY: HowAnswerKind.PROCEDURE,
             HowIntent.STUDENT_LIFE: HowAnswerKind.PROCEDURE,

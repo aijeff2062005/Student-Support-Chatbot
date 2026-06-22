@@ -1,0 +1,33 @@
+version: "1.0"
+flow_name: "how_document"
+description: >
+  Workflow for HOW-DOCUMENT questions about student documents, forms, and
+  procedural requests such as certificates, transcripts, application forms,
+  leave/retention requests, and internship introduction letters.
+
+  Strategy:
+  - Retrieve only the procedural facts needed to complete the request.
+  - Keep the scope document-specific and avoid unrelated policy or academic facts.
+
+supported_entity_types:
+  - Document
+requires_entity_id: true
+
+traversal_steps:
+  - step: 1
+    name: "document_procedure"
+    description: "Fetch only the document procedure fields needed for guidance."
+    cypher_template: >
+      MATCH (d:Document)
+      WHERE d.id = $entity_id
+      RETURN d.requirements,
+             d.application_steps,
+             d.processing_time,
+             d.fee,
+             d.form_url
+    attributes:
+      - requirements
+      - application_steps
+      - processing_time
+      - fee
+      - form_url

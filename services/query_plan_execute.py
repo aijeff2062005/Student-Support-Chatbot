@@ -803,10 +803,12 @@ class QueryOrchestrator:
             "how_course": (HowIntent.COURSE, HowAnswerKind.ROADMAP),
             "how_course_roadmap": (HowIntent.COURSE, HowAnswerKind.ROADMAP),
             "how_fee": (HowIntent.FEE, HowAnswerKind.PROCEDURE),
+            "how_document": (HowIntent.DOCUMENT, HowAnswerKind.PROCEDURE),
             "how_procedure_policy": (HowIntent.POLICY, HowAnswerKind.PROCEDURE),
             "how_activity": (HowIntent.ACTIVITY, HowAnswerKind.PROCEDURE),
             "how_student_life": (HowIntent.STUDENT_LIFE, HowAnswerKind.PROCEDURE),
             "how_facilities": (HowIntent.FACILITIES, HowAnswerKind.PROCEDURE),
+            "how_facilities_student_experience": (HowIntent.FACILITIES, HowAnswerKind.PROCEDURE),
             "how_campus_contact": (HowIntent.CAMPUS_CONTACT, HowAnswerKind.CONTACT),
             "how_skill_training": (HowIntent.SKILL_TRAINING, HowAnswerKind.ROADMAP),
             "how_skill_to_major": (HowIntent.SKILL_TO_MAJOR, HowAnswerKind.ELIGIBILITY),
@@ -893,6 +895,20 @@ class QueryOrchestrator:
                 "scholarship_policy": scholarship_policy,
                 "admission_fee_info": fee_references,
             }
+        elif flow_name == "how_document":
+            document_procedure_rows = self._extract_how_step_rows(all_flow_results, "document_procedure")
+            document_procedure = document_procedure_rows[0] if document_procedure_rows else None
+            answer_data = {
+                "scope_entity": scope_entity,
+                "requirements": document_procedure.get("requirements") if isinstance(document_procedure, dict) else None,
+                "application_steps": document_procedure.get("application_steps") if isinstance(document_procedure, dict) else None,
+                "processing_time": document_procedure.get("processing_time") if isinstance(document_procedure, dict) else None,
+                "fee": document_procedure.get("fee") if isinstance(document_procedure, dict) else None,
+                "form_url": document_procedure.get("form_url") if isinstance(document_procedure, dict) else None,
+            }
+            structured_evidence = {
+                "document_procedure": document_procedure_rows,
+            }
         elif flow_name == "how_procedure_policy":
             policy_overview = self._extract_how_step_rows(all_flow_results, "policy_overview")
             policy_compliance = self._extract_how_step_rows(all_flow_results, "policy_compliance")
@@ -950,6 +966,18 @@ class QueryOrchestrator:
                 "support_services_detail": support_services,
             }
         elif flow_name == "how_facilities":
+            facility_usage = self._extract_how_step_rows(all_flow_results, "facility_usage")
+            manager_contacts = self._extract_how_step_rows(all_flow_results, "managed_facilities")
+            answer_data = {
+                "scope_entity": scope_entity,
+                "facility_usage": facility_usage,
+                "manager_contacts": manager_contacts,
+            }
+            structured_evidence = {
+                "facility_usage": facility_usage,
+                "managed_facilities": manager_contacts,
+            }
+        elif flow_name == "how_facilities_student_experience":
             facility_usage = self._extract_how_step_rows(all_flow_results, "facility_usage")
             manager_contacts = self._extract_how_step_rows(all_flow_results, "managed_facilities")
             answer_data = {

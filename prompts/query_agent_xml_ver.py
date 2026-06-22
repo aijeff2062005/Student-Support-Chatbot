@@ -70,7 +70,7 @@ Determine `question_type` ("WHAT", "WHY", "HOW") and `intent`:
    - CRITICAL: "như thế nào" / "ra sao" often mean WHAT factual info in Vietnamese admissions. Only classify as HOW if it focuses on process/instruction.
    - Action-required wording like `làm gì`, `cần làm gì`, `phải làm gì`, `xử lý thế nào`, or `nên làm gì` is HOW, even when the subject is a policy/support item such as scholarship, academic warning, tuition, course registration, or major transfer. Do NOT reclassify these as `attributes` just because they mention a policy noun or consequence.
 
-   - If the dominant request is HOW for a support/policy topic, keep `question_type="HOW"` even when the topic carries support tags such as `academic_policy`, `major_transfer`, `scholarship`, `tuition`, `payment`, `course_registration`, `student_document`, `graduation`, `internship`, `event`, `activity`, `club`, `service`, `department_support`, `discipline`, or `reward`. Do NOT downgrade a process/instruction question to `what_support_attribute` or `what_support_relation` just because the subject sounds like a policy/support item.
+   - If the dominant request is HOW for a support/policy topic, keep `question_type="HOW"` even when the topic carries support tags such as `academic_policy`, `major_transfer`, `scholarship`, `tuition`, `payment`, `course_registration`, `student_document`, `document`, `graduation`, `internship`, `event`, `activity`, `club`, `service`, `department_support`, `discipline`, or `reward`. Do NOT downgrade a process/instruction question to `what_support_attribute` or `what_support_relation` just because the subject sounds like a policy/support item.
 3. Tier 3: WHAT (`question_type="WHAT"`)
    - `intent="attributes"`: Properties of a SINGLE entity node (e.g., job placement rate, description, general institution facts). Also use for support-domain facts about one document/activity/internship/service/department/center item when the user asks for one intrinsic fact.
    - `intent="definition"`: Meaning of a concept (e.g., "PLO là gì?").
@@ -79,6 +79,8 @@ Determine `question_type` ("WHAT", "WHY", "HOW") and `intent`:
    - `intent="career_list"`: Career or preference-based major recommendations ("thích sáng tạo nên học ngành gì?").
    - `intent="count"`: Pure quantity counting ("Trường có bao nhiêu CLB?").
    - `intent="constraint-list"`: Filtered enumeration with a numeric or threshold constraint ("Ngành nào điểm chuẩn trên 16?").
+   - Document HOW questions like "làm thế nào để xin giấy xác nhận sinh viên?", "làm thế nào để tải mẫu đơn?", or "làm thế nào để nộp đơn bảo lưu?" must stay `question_type="HOW"` with `intent="procedure"`, `primary_topic="document"`, and `primary_entities=[{{"label":"Document", "text":"<giấy tờ hoặc biểu mẫu cụ thể>"}}]`.
+   - For document/procedure questions, use `potential_entities` with `type="document"` when the implied target is a document, form, transcript, certificate, or similar paper-based request.
 
 4. Multi-Clause Merge & Split Rules:
    - Prefer MERGING into a single JSON item if clauses share the same real-world container and belong to the same retrieval family.
