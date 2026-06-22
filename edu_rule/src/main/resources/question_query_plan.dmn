@@ -1799,6 +1799,41 @@
           <dmn:text>Hướng nghiệp/Chọn ngành</dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
+      <dmn:rule id="r_how_activity">
+        <dmn:inputEntry id="r_how_activity_qtype">
+          <dmn:text>&quot;how&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_intent">
+          <dmn:text>&quot;procedure&quot;, &quot;explain&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_topic">
+          <dmn:text>&quot;student_life&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_subtopics">
+          <dmn:text>some t in ? satisfies list contains([&quot;activity&quot;, &quot;event&quot;], t)</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_compare">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_time_compare">
+          <dmn:text>-</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_disambig">
+          <dmn:text>false</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="r_how_activity_potential">
+          <dmn:text>&quot;activity&quot;</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="r_how_activity_out">
+          <dmn:text>&quot;how_activity&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="r_how_activity_answer">
+          <dmn:text>&quot;how_activity&quot;</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Specific activity</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
       <dmn:rule id="r_how_student_life">
         <dmn:inputEntry id="r_how_student_life_qtype">
           <dmn:text>&quot;how&quot;</dmn:text>

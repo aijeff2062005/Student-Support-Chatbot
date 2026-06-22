@@ -1,0 +1,79 @@
+version: "1.0"
+flow_name: "how_activity"
+description: >
+  Standalone workflow for HOW questions about registering for or joining one
+  specific student activity/event. This flow intentionally does not retrieve
+  unrelated clubs, facilities, or general student-support services.
+
+supported_entity_types:
+  - Activity
+
+requires_entity_id: true
+
+traversal_steps:
+  - step: 1
+    name: "activity_participation"
+    description: "Fetch official participation and registration details for the resolved activity."
+    cypher_template: >
+      MATCH (a:Activity)
+      WHERE a.id = $entity_id
+      RETURN a.name,
+             a.description,
+             a.activity_type,
+             a.category,
+             a.status,
+             a.registration_method,
+             a.register_start_date,
+             a.register_end_date,
+             a.start_date,
+             a.end_date,
+             a.address,
+             a.source_url,
+             a.benefit
+    attributes:
+      - name
+      - description
+      - activity_type
+      - category
+      - status
+      - registration_method
+      - register_start_date
+      - register_end_date
+      - start_date
+      - end_date
+      - address
+      - source_url
+      - benefit
+
+  - step: 2
+    name: "activity_organizers"
+    description: "Fetch confirmed clubs, faculties, or units organizing the activity."
+    cypher_template: >
+      MATCH (a:Activity)-[:ORGANIZED_BY]->(organizer)
+      WHERE a.id = $entity_id
+      RETURN organizer.name AS organizer_name,
+             labels(organizer) AS organizer_types,
+             organizer.website AS organizer_website,
+             organizer.emails AS organizer_emails,
+             organizer.phone AS organizer_phone,
+             organizer.fanpage AS organizer_fanpage
+    attributes:
+      - organizer_name
+      - organizer_types
+      - organizer_website
+      - organizer_emails
+      - organizer_phone
+      - organizer_fanpage
+
+output_hints:
+  answer_kind: "procedure"
+  primary_step: "activity_participation"
+  supporting_step: "activity_organizers"
+  focus:
+    - "registration_method"
+    - "registration_window"
+    - "event_schedule"
+    - "location"
+    - "official_source"
+    - "organizer"
+
