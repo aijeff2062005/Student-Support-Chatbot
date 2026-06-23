@@ -69,6 +69,7 @@ Determine `question_type` ("WHAT", "WHY", "HOW") and `intent`:
    - `intent="explain"`: Conceptual mechanisms, operational logic ("Hệ thống vận hành như thế nào?").
    - CRITICAL: "như thế nào" / "ra sao" often mean WHAT factual info in Vietnamese admissions. Only classify as HOW if it focuses on process/instruction.
    - Action-required wording like `làm gì`, `cần làm gì`, `phải làm gì`, `xử lý thế nào`, or `nên làm gì` is HOW, even when the subject is a policy/support item such as scholarship, academic warning, tuition, course registration, or major transfer. Do NOT reclassify these as `attributes` just because they mention a policy noun or consequence.
+   - Internship procedure questions such as "muốn đi thực tập thì phải làm sao", "cần gì để đi thực tập", or "cách xin giấy giới thiệu thực tập" MUST stay `question_type="HOW"`, `intent="procedure"`, `primary_topic="career"` or `"policy"`, and include `subtopics=["support","internship"]`.
 
    - If the dominant request is HOW for a support/policy topic, keep `question_type="HOW"` even when the topic carries support tags such as `academic_policy`, `major_transfer`, `scholarship`, `tuition`, `payment`, `course_registration`, `student_document`, `document`, `graduation`, `internship`, `event`, `activity`, `club`, `service`, `department_support`, `discipline`, or `reward`. Do NOT downgrade a process/instruction question to `what_support_attribute` or `what_support_relation` just because the subject sounds like a policy/support item.
 3. Tier 3: WHAT (`question_type="WHAT"`)
